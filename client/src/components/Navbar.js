@@ -5,7 +5,7 @@ import logo from '../img/logo.png';
 import { FaUser, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaCog } from 'react-icons/fa';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, passwordVerified } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,13 +13,40 @@ const Navbar = () => {
     navigate('/password-protection');
   };
 
+  // Check if password verification is still valid (within 24 hours)
+  const isPasswordVerificationValid = () => {
+    const verified = localStorage.getItem('passwordVerified');
+    const verifiedTimestamp = localStorage.getItem('passwordVerifiedTimestamp');
+    
+    if (verified !== 'true' || !verifiedTimestamp) {
+      return false;
+    }
+    
+    // Check if verification is older than 24 hours
+    const now = Date.now();
+    const timestamp = parseInt(verifiedTimestamp, 10);
+    const hoursSinceVerification = (now - timestamp) / (1000 * 60 * 60);
+    
+    return hoursSinceVerification <= 24;
+  };
+
   const handleLogoClick = (e) => {
-    // If user is not authenticated, redirect to password protection
-    if (!isAuthenticated) {
-      e.preventDefault();
+    e.preventDefault();
+    
+    // If user is authenticated, navigate to home
+    if (isAuthenticated) {
+      navigate('/');
+      return;
+    }
+    
+    // If user is not authenticated, check password verification status
+    if (isPasswordVerificationValid()) {
+      // Password verification is still valid (within 24 hours), go to login page
+      navigate('/login');
+    } else {
+      // Password verification expired or doesn't exist, go to password protection
       navigate('/password-protection');
     }
-    // If user is authenticated, let the normal Link behavior work (navigate to home)
   };
 
   return (

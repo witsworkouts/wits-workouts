@@ -5,6 +5,19 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Check if password protection is enabled (public - no auth required)
+router.get('/protection-status', async (req, res) => {
+  try {
+    const settings = await SiteSettings.getSettings();
+    res.json({
+      isActive: settings.isActive
+    });
+  } catch (error) {
+    console.error('Get protection status error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get site settings (public - for password verification)
 router.post('/verify-password', [
   body('password')

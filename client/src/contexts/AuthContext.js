@@ -3,13 +3,37 @@ import axiosInstance from '../config/axios';
 
 const AuthContext = createContext();
 
+// Check if password verification is still valid (expires after 24 hours)
+const getPasswordVerifiedStatus = () => {
+  const verified = localStorage.getItem('passwordVerified');
+  const verifiedTimestamp = localStorage.getItem('passwordVerifiedTimestamp');
+  
+  if (verified !== 'true' || !verifiedTimestamp) {
+    return false;
+  }
+  
+  // Check if verification is older than 24 hours
+  const now = Date.now();
+  const timestamp = parseInt(verifiedTimestamp, 10);
+  const hoursSinceVerification = (now - timestamp) / (1000 * 60 * 60);
+  
+  if (hoursSinceVerification > 24) {
+    // Expired - clear it
+    localStorage.removeItem('passwordVerified');
+    localStorage.removeItem('passwordVerifiedTimestamp');
+    return false;
+  }
+  
+  return true;
+};
+
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
   isAuthenticated: false,
   loading: true,
   error: null,
-  passwordVerified: localStorage.getItem('passwordVerified') === 'true'
+  passwordVerified: getPasswordVerifiedStatus()
 };
 
 const authReducer = (state, action) => {
@@ -143,6 +167,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     // Clear password verification when logging out
     localStorage.removeItem('passwordVerified');
+    localStorage.removeItem('passwordVerifiedTimestamp');
     dispatch({ type: 'LOGOUT' });
   };
 
@@ -188,11 +213,13 @@ export const AuthProvider = ({ children }) => {
   // Password verification functions
   const verifyPassword = () => {
     localStorage.setItem('passwordVerified', 'true');
+    localStorage.setItem('passwordVerifiedTimestamp', Date.now().toString());
     dispatch({ type: 'PASSWORD_VERIFIED' });
   };
 
   const resetPasswordVerification = () => {
     localStorage.removeItem('passwordVerified');
+    localStorage.removeItem('passwordVerifiedTimestamp');
     dispatch({ type: 'PASSWORD_RESET' });
   };
 

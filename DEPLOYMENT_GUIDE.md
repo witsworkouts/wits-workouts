@@ -164,6 +164,8 @@ CLIENT_URL=https://wits-workouts.com
    - **Build Command**: `NODE_OPTIONS=--openssl-legacy-provider npm install && NODE_OPTIONS=--openssl-legacy-provider npm run build`
    - **Publish Directory**: `build`
    - **Auto-Deploy**: `Yes` (deploys automatically on git push)
+   
+   **Note**: The `_redirects` file in `client/public/` is automatically included in the build and ensures that all routes (like `/login`, `/register`, etc.) serve `index.html` so React Router can handle client-side routing. This prevents "Not Found" errors when reloading pages.
 
 3. **Environment Variables**
    Add these environment variables:
@@ -242,12 +244,15 @@ If you want to serve frontend from backend (already configured in `server/index.
    
    **Option A: Use A Records (Recommended)**
    - Go to Render dashboard → Your Frontend Service → Settings → Custom Domains
-   - Render will provide A record IP addresses
-   - In GoDaddy, add A records:
-     - **Type**: A
-     - **Name**: `@` (or leave blank)
-     - **Value**: The IP address from Render (e.g., `216.24.57.1`)
-     - **TTL**: 600
+   - Render will provide A record IP addresses (usually 2-4 IP addresses)
+   - **IMPORTANT**: In GoDaddy, you need to:
+     1. **Remove any existing A records** for `@` that point to GoDaddy's parking page
+     2. **Add new A records** for each IP address Render provides:
+        - **Type**: A
+        - **Name**: `@` (or leave blank - this is the root domain)
+        - **Value**: Each IP address from Render (add one record per IP)
+        - **TTL**: 600
+     3. **Make sure you're NOT using GoDaddy's "Parked Domain" or "Coming Soon" page**
    
    - For `www`:
      - **Type**: CNAME
@@ -260,10 +265,13 @@ If you want to serve frontend from backend (already configured in `server/index.
    - Set up redirect from root domain to www in Render or GoDaddy
    
    **For API subdomain** (if using separate backend):
-   - **Type**: CNAME
-   - **Name**: `api` (or `backend`)
-   - **Value**: The backend Render URL (e.g., `wellness-in-schools-api.onrender.com`)
-   - **TTL**: 3600
+   - **Important**: First add `api.wits-workouts.com` as a custom domain in Render (Step 6.1)
+   - Render will provide the exact DNS record to use (usually a CNAME)
+   - In GoDaddy, add the record:
+     - **Type**: CNAME (or A record if Render specifies)
+     - **Name**: `api` (or `backend`)
+     - **Value**: Use the exact value Render provides (e.g., `wits-workouts-api.onrender.com` or an IP address)
+     - **TTL**: 3600
 
 3. **Wait for DNS Propagation**
    - DNS changes can take 24-48 hours, but usually happen within 1-2 hours
@@ -271,9 +279,63 @@ If you want to serve frontend from backend (already configured in `server/index.
 
 ---
 
+## Step 7.5: Verify DNS Propagation (Before Step 8)
+
+**How long to wait:**
+- ⏱️ **Usually**: 1-2 hours
+- ⏱️ **Maximum**: 24-48 hours (rare)
+- ⏱️ **Minimum**: 15-30 minutes (sometimes faster)
+
+**How to know you're ready for Step 8:**
+
+### 1. Check DNS Propagation
+Visit [whatsmydns.net](https://www.whatsmydns.net) and check:
+- `wits-workouts.com` - Should show your Render IP addresses
+- `www.wits-workouts.com` - Should show your Render CNAME
+- `api.wits-workouts.com` - Should show your backend Render URL
+
+### 2. Test Domain Access
+Try accessing your domains directly in a browser:
+
+- **Frontend**: `https://wits-workouts.com` or `https://www.wits-workouts.com`
+  - ✅ **Ready if**: Site loads (even if it shows errors, that's fine - it means DNS is working)
+  - ❌ **Not ready if**: "This site can't be reached" or DNS error
+
+- **Backend API**: `https://api.wits-workouts.com/api/health`
+  - ✅ **Ready if**: You see `{"status":"OK","message":"Wellness in Schools API is running"}` or similar JSON
+  - ❌ **Not ready if**: "This site can't be reached" or DNS error
+
+### 3. Check SSL Certificate Status
+- Go to Render Dashboard → Your Services → Settings → Custom Domains
+- ✅ **Ready if**: SSL certificate shows "Active" or "Provisioned" (green checkmark)
+- ⏳ **Wait if**: SSL shows "Pending" or "Provisioning" (this happens automatically after DNS propagates)
+
+### 4. Quick Test Commands
+You can also test from your terminal:
+```bash
+# Test frontend domain
+curl -I https://wits-workouts.com
+
+# Test API domain
+curl https://api.wits-workouts.com/api/health
+```
+
+**✅ You're ready for Step 8 when:**
+- DNS has propagated (checked via whatsmydns.net)
+- You can access `https://wits-workouts.com` (even if it shows errors)
+- You can access `https://api.wits-workouts.com/api/health` and get a response
+- SSL certificates are active in Render dashboard
+
+**⏳ Still waiting if:**
+- DNS lookup fails
+- "This site can't be reached" errors
+- SSL certificate still pending
+
+---
+
 ## Step 8: Update Environment Variables After Domain Setup
 
-Once your domain is live, update environment variables:
+Once your domain is live and verified, update environment variables:
 
 ### Backend Service:
 ```
@@ -401,8 +463,28 @@ For now, the app will work, but uploaded thumbnails may be lost on redeploy.
   - Ensure `CLIENT_URL` doesn't have a trailing slash: use `https://wits-workouts.com` not `https://wits-workouts.com/`
 - Verify backend is running and accessible
 
-### Domain not working
-- Wait for DNS propagation (up to 48 hours)
+### Domain not working / Seeing GoDaddy "Launching Soon" or "Parked Domain" page
+- **Problem**: You see GoDaddy's default "Launching Soon" or "Parked Domain" page instead of your site
+- **Solution**:
+  1. **Go to GoDaddy DNS settings** → Your Domain → DNS
+  2. **Check for A records** with Name `@` (or blank)
+  3. **Remove any A records** that point to GoDaddy IPs (like `50.63.202.1` or similar)
+  4. **Get Render IP addresses**:
+     - Go to Render Dashboard → Your Frontend Service → Settings → Custom Domains
+     - Look for `wits-workouts.com` - it will show A record IP addresses
+  5. **Add new A records** in GoDaddy:
+     - Type: A
+     - Name: `@` (or leave blank)
+     - Value: Each IP address from Render (add one record per IP - usually 2-4 IPs)
+     - TTL: 600
+  6. **Disable GoDaddy Parking** (if enabled):
+     - In GoDaddy, go to your domain settings
+     - Look for "Parked Domain" or "Coming Soon" page settings
+     - Disable/turn off any parking page features
+  7. **Wait 15-60 minutes** for DNS to update
+  8. **Test**: Visit `https://wits-workouts.com` - should now show your site
+- **Alternative**: If you can't get A records working, use `www.wits-workouts.com` only and set up a redirect
+- Wait for DNS propagation (up to 48 hours, usually 1-2 hours)
 - Verify DNS records in GoDaddy match Render's requirements
 - Check SSL certificate status in Render dashboard
 

@@ -108,7 +108,34 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Wellness in Schools API is running' });
 });
 
-// Error handling middleware
+// Serve React app for all non-API routes in production
+// This must come BEFORE the error handler
+if (process.env.NODE_ENV === 'production') {
+  // Catch all non-API routes and serve index.html for client-side routing
+  app.get('*', (req, res, next) => {
+    // Skip if it's an API route
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    // Skip if it's a static file request (like /static/...)
+    if (req.path.startsWith('/static')) {
+      return next();
+    }
+    // Serve index.html for all other routes (React Router will handle routing)
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
+} else {
+  // 404 handler for development
+  app.use('*', (req, res) => {
+    if (req.path.startsWith('/api')) {
+      res.status(404).json({ message: 'API route not found' });
+    } else {
+      res.status(404).json({ message: 'Route not found' });
+    }
+  });
+}
+
+// Error handling middleware (must be last)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
@@ -116,18 +143,6 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
 });
-
-// Serve React app for all non-API routes in production
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
-  });
-} else {
-  // 404 handler for development
-  app.use('*', (req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-  });
-}
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/wellness-in-schools')

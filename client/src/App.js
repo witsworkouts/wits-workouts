@@ -82,8 +82,23 @@ function App() {
                   <Navbar />
                   <main className="main-content">
                     <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/video/:id" element={<VideoPlayer />} />
+                      {/* Home and Video Player require authentication */}
+                      <Route 
+                        path="/" 
+                        element={
+                          <PrivateRoute>
+                            <Home />
+                          </PrivateRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/video/:id" 
+                        element={
+                          <PrivateRoute>
+                            <VideoPlayer />
+                          </PrivateRoute>
+                        } 
+                      />
                       
                       {/* Protected Routes */}
                       <Route 
@@ -105,8 +120,8 @@ function App() {
                         } 
                       />
                       
-                      {/* Catch all route */}
-                      <Route path="*" element={<Navigate to="/" replace />} />
+                      {/* Catch all route - redirect to login if not authenticated */}
+                      <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>
                   </main>
                 </PasswordRoute>
