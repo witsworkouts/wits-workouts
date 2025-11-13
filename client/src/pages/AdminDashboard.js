@@ -379,7 +379,8 @@ const AdminDashboard = () => {
         ...newVideo,
         googleDriveId: driveId,
         tags: newVideo.tags ? newVideo.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-        duration: parseInt(newVideo.duration) || 300,
+        // For Mindfulness, don't set duration; for others, use the selected duration
+        duration: newVideo.category === 'mindfulness' ? undefined : (parseInt(newVideo.duration) || 300),
         thumbnailUrl: thumbnailUrl || undefined
       };
 
@@ -499,6 +500,8 @@ const AdminDashboard = () => {
       const videoData = {
         ...editVideo,
         tags: editVideo.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        // For Mindfulness, don't set duration; for others, keep the existing duration
+        duration: editVideo.category === 'mindfulness' ? undefined : (editVideo.duration || 300),
         thumbnailUrl: thumbnailUrl || undefined
       };
 
@@ -976,16 +979,26 @@ const AdminDashboard = () => {
 
                       <div className="form-group">
                         <label className="form-label">Duration</label>
-                        <select
-                          value={newVideo.duration}
-                          onChange={(e) => setNewVideo({...newVideo, duration: parseInt(e.target.value)})}
-                          className="form-input"
-                          required
-                        >
-                          {durations.map(dur => (
-                            <option key={dur.value} value={dur.value}>{dur.label}</option>
-                          ))}
-                        </select>
+                        {newVideo.category === 'mindfulness' ? (
+                          <input
+                            type="text"
+                            value="N/A (Not applicable for Mindfulness)"
+                            className="form-input"
+                            disabled
+                            style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                          />
+                        ) : (
+                          <select
+                            value={newVideo.duration}
+                            onChange={(e) => setNewVideo({...newVideo, duration: parseInt(e.target.value)})}
+                            className="form-input"
+                            required
+                          >
+                            {durations.map(dur => (
+                              <option key={dur.value} value={dur.value}>{dur.label}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
 
                       <div className="form-group">
@@ -1172,16 +1185,26 @@ const AdminDashboard = () => {
 
                       <div className="form-group">
                         <label className="form-label">Duration</label>
-                        <select
-                          value={editVideo.duration}
-                          onChange={(e) => setEditVideo({...editVideo, duration: parseInt(e.target.value)})}
-                          className="form-input"
-                          required
-                        >
-                          {durations.map(dur => (
-                            <option key={dur.value} value={dur.value}>{dur.label}</option>
-                          ))}
-                        </select>
+                        {editVideo.category === 'mindfulness' ? (
+                          <input
+                            type="text"
+                            value="N/A (Not applicable for Mindfulness)"
+                            className="form-input"
+                            disabled
+                            style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                          />
+                        ) : (
+                          <select
+                            value={editVideo.duration}
+                            onChange={(e) => setEditVideo({...editVideo, duration: parseInt(e.target.value)})}
+                            className="form-input"
+                            required
+                          >
+                            {durations.map(dur => (
+                              <option key={dur.value} value={dur.value}>{dur.label}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
 
                       <div className="form-group">

@@ -193,11 +193,19 @@ export const VideoProvider = ({ children }) => {
   const loadVideosByCategoryAndSubcategory = async (category, subcategoryWithDuration) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      // Parse subcategory and duration from the combined string (e.g., "pre-k-2-5min")
-      const lastDashIndex = subcategoryWithDuration.lastIndexOf('-');
-      const subcategory = subcategoryWithDuration.substring(0, lastDashIndex);
-      const durationStr = subcategoryWithDuration.substring(lastDashIndex + 1);
-      const duration = parseInt(durationStr.replace('min', ''));
+      let subcategory, duration;
+      
+      // For Mindfulness category, subcategory is just the grade level (no duration)
+      if (category === 'mindfulness') {
+        subcategory = subcategoryWithDuration; // Just the grade level (e.g., "pre-k-2")
+        duration = null; // No duration filtering for Mindfulness
+      } else {
+        // For other categories, parse subcategory and duration from combined string (e.g., "pre-k-2-5min")
+        const lastDashIndex = subcategoryWithDuration.lastIndexOf('-');
+        subcategory = subcategoryWithDuration.substring(0, lastDashIndex);
+        const durationStr = subcategoryWithDuration.substring(lastDashIndex + 1);
+        duration = parseInt(durationStr.replace('min', ''));
+      }
       
       // Get all videos for the category first
       const res = await axiosInstance.get(`/api/videos/category/${category}`);
@@ -213,8 +221,8 @@ export const VideoProvider = ({ children }) => {
         });
       }
       
-      // Filter by duration (within 1 minute tolerance)
-      if (duration) {
+      // Filter by duration (within 1 minute tolerance) - skip for Mindfulness
+      if (duration && category !== 'mindfulness') {
         videos = videos.filter(video => {
           if (!video.duration) {
             // If no duration is set, assume it's a 5-minute video for now
