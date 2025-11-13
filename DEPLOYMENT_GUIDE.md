@@ -313,13 +313,54 @@ The backend CORS is already configured to use `CLIENT_URL` environment variable,
 
 ### 10.3 Create Admin Account
 
-Once deployed, you can create an admin account using the script:
-```bash
-# SSH into Render or run locally with production MONGODB_URI
-node server/scripts/createKitAdmin.js
-```
+You need at least one admin account to manage the site. Here are three ways to create one:
 
-Or use the admin panel to create admins (if you have access).
+#### Option 1: Using Render Shell (Recommended - Easiest)
+
+1. **Go to Render Dashboard** → Your Backend Service → **Shell** tab (or click "Shell" in the left sidebar)
+2. **Open the Shell** (click "Open Shell" or use the terminal)
+3. **Navigate to the server directory** (if root directory is set to `server`, you're already there):
+   ```bash
+   # If root directory is the project root:
+   cd server
+   # If root directory is already set to 'server' in Render, skip this step
+   ```
+4. **Run the script**:
+   ```bash
+   node scripts/createProductionAdmin.js
+   ```
+5. **Or with custom credentials**:
+   ```bash
+   EMAIL=your-email@example.com PASSWORD=YourSecurePassword123 USERNAME=admin node scripts/createProductionAdmin.js
+   ```
+6. **Note the credentials** displayed and **change the password after first login**
+
+#### Option 2: Run Script Locally with Production Database
+
+1. **Set your production MONGODB_URI** locally:
+   ```bash
+   export MONGODB_URI="mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/wellness-in-schools?retryWrites=true&w=majority"
+   ```
+2. **Run the script**:
+   ```bash
+   cd server
+   node scripts/createProductionAdmin.js
+   ```
+3. **Or with custom credentials**:
+   ```bash
+   MONGODB_URI="your-connection-string" EMAIL=your-email@example.com PASSWORD=YourPassword node scripts/createProductionAdmin.js
+   ```
+
+#### Option 3: Use Existing Scripts
+
+You can also use the existing scripts:
+- `createKitAdmin.js` - Creates admin with email `kit@wellnessintheschools.org`
+- `createAdmin.js` - Creates admin with email `nsbhui26@colby.edu`
+
+**Important Security Notes:**
+- ⚠️ Change the default password immediately after first login
+- ⚠️ The script uses environment variables, so your production MONGODB_URI is already available in Render
+- ⚠️ After creating the admin, you can use the admin panel to create additional admins
 
 ---
 
