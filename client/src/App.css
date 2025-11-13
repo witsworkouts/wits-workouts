@@ -415,18 +415,19 @@ select.form-input option {
   .category-tabs {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.5rem !important;
-    padding: 0 0.75rem !important;
+    gap: 0.75rem !important;
+    padding: 0 1rem !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    align-items: stretch !important;
   }
   
   .category-tab {
-    font-size: 0.9rem !important;
-    padding: 12px 8px !important;
+    font-size: 1rem !important;
+    padding: 14px 10px !important;
     white-space: normal !important;
     overflow: hidden !important;
     text-overflow: clip !important;
