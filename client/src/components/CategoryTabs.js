@@ -21,15 +21,18 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
   };
 
   const handleCategoryClick = (categoryId, e) => {
-    // For touch devices, toggle dropdown on click
-    if (isTouchDevice()) {
+    // For touch devices, toggle dropdown on click (only for categories with subcategories)
+    if (isTouchDevice() && e) {
       e.stopPropagation();
-      // If clicking the same category and dropdown is open, close it
-      if (showSubcategories === categoryId) {
-        setShowSubcategories(null);
-      } else {
-        // Open dropdown for this category
-        setShowSubcategories(categoryId);
+      // Only toggle dropdown for categories that have subcategories (not 'featured' or 'saved')
+      if (categoryId !== 'featured' && categoryId !== 'saved') {
+        // If clicking the same category and dropdown is open, close it
+        if (showSubcategories === categoryId) {
+          setShowSubcategories(null);
+        } else {
+          // Open dropdown for this category
+          setShowSubcategories(categoryId);
+        }
       }
     }
     // Always change the category
@@ -129,7 +132,7 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
             e.target.style.boxShadow = 'none';
           }
         } : undefined}
-        onClick={() => handleCategoryClick('featured')}
+        onClick={(e) => handleCategoryClick('featured', e)}
       >
         Featured Videos
       </button>
@@ -231,7 +234,7 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
             e.target.style.boxShadow = 'none';
           }
         } : undefined}
-        onClick={() => handleCategoryClick('saved')}
+        onClick={(e) => handleCategoryClick('saved', e)}
       >
         Saved Videos
       </button>

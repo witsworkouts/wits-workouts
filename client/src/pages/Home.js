@@ -76,6 +76,9 @@ const Home = () => {
   }, [hasLoadedInitial, previousState, location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCategoryChange = (category) => {
+    // Clear active subcategory when clicking on a category directly
+    setActiveSubcategory(null);
+    
     if (category === 'featured') {
       loadFeaturedVideos();
       // Also need to update the current category in the context
@@ -263,7 +266,9 @@ const Home = () => {
               ? `Search Results for "${searchQuery}"` 
               : currentCategory === 'saved' 
                 ? 'Saved Videos' 
-                : 'Videos of the Week!'}
+                : currentCategory === 'featured'
+                  ? 'Videos of the Week!'
+                  : displayCategories.find(cat => cat.id === currentCategory)?.name || 'Videos'}
           </h2>
           
           {loading ? (
