@@ -942,7 +942,7 @@ select.form-input option {
   
   .category-tabs {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
     gap: 0.5rem !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -951,9 +951,10 @@ select.form-input option {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    align-items: stretch !important;
   }
   
-  /* All category tabs - 2 per row, 3 rows total, equal width */
+  /* All category tabs - 1 per row, full width */
   .category-tab {
     font-size: 0.8rem !important;
     padding: 10px 6px !important;
@@ -970,13 +971,18 @@ select.form-input option {
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    height: 50px !important;
+    height: 100% !important;
     min-height: 50px !important;
-    max-height: 50px !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
     margin: 0 !important;
+    position: relative !important;
+  }
+  
+  /* Decrease font size for Mindfulness category on mobile */
+  .category-tab[data-category-id="mindfulness"] {
+    font-size: 0.7rem !important;
   }
   
   /* Ensure text wraps to multiple lines if needed and stays within container */
@@ -994,37 +1000,49 @@ select.form-input option {
   }
   
   /* All category tabs and wrapper divs - 2 per row with equal width */
+  /* Direct buttons (Featured Videos, Saved Videos) - fill entire grid cell */
   .category-tabs > button.category-tab:first-child,
-  .category-tabs > button.category-tab:last-child,
-  .category-tabs > div {
+  .category-tabs > button.category-tab:last-child {
     width: 100% !important;
+    height: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
-  
-  /* Category buttons inside wrapper divs - same width */
-  .category-tabs > div > button.category-tab {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
+    min-height: 50px !important;
     margin: 0 !important;
     padding: 10px 6px !important;
     box-sizing: border-box !important;
+    position: relative !important;
   }
   
-  /* Ensure wrapper divs take full grid cell */
+  /* Wrapper divs must fill entire grid cell and be clickable */
   .category-tabs > div {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    min-height: 50px !important;
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
+    position: relative !important;
+    cursor: pointer !important;
+  }
+  
+  /* Category buttons inside wrapper divs - fill full wrapper */
+  .category-tabs > div > button.category-tab {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 50px !important;
+    margin: 0 !important;
+    padding: 10px 6px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    cursor: pointer !important;
+    flex: 1 1 100% !important;
   }
   
   

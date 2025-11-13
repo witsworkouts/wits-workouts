@@ -144,6 +144,7 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
         >
           <button
             className={`category-tab ${currentCategory === category.id ? 'active' : ''}`}
+            data-category-id={category.id}
             style={{
               background: currentCategory === category.id 
                 ? `linear-gradient(45deg, ${category.color}, ${category.color})` 
