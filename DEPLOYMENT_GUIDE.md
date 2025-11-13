@@ -165,7 +165,17 @@ CLIENT_URL=https://wits-workouts.com
    - **Publish Directory**: `build`
    - **Auto-Deploy**: `Yes` (deploys automatically on git push)
    
-   **Note**: The `_redirects` file in `client/public/` is automatically included in the build and ensures that all routes (like `/login`, `/register`, etc.) serve `index.html` so React Router can handle client-side routing. This prevents "Not Found" errors when reloading pages.
+   **Important - Client-Side Routing Fix**: 
+   - The `_redirects` file in `client/public/` should be automatically copied to the build directory
+   - **If you still get "Not Found" errors when reloading pages**, you need to configure redirects in Render:
+     1. Go to Render Dashboard → Your Static Site → Settings
+     2. Scroll down to "Redirects/Rewrites" section
+     3. Add a redirect rule:
+        - **Source Path**: `/*`
+        - **Destination**: `/index.html`
+        - **Type**: Rewrite (200 status)
+     4. Save and redeploy
+   - This ensures all routes (like `/password-protection`, `/login`, `/register`, etc.) serve `index.html` so React Router can handle client-side routing
 
 3. **Environment Variables**
    Add these environment variables:
@@ -501,6 +511,21 @@ For now, the app will work, but uploaded thumbnails may be lost on redeploy.
   ```
 - **Alternative**: Add `NODE_OPTIONS=--openssl-legacy-provider` as an environment variable in Render
 - **Long-term fix**: Upgrade `react-scripts` to v5.x in `package.json` (requires testing)
+
+### "Not Found" error when reloading pages (like `/password-protection`, `/login`, etc.)
+- **Problem**: When you reload a page like `https://wits-workouts.com/password-protection`, you get a "Not Found" error
+- **Cause**: Render's static site hosting doesn't recognize client-side routes and tries to find a file at that path
+- **Solution**: Configure redirects in Render Dashboard:
+  1. Go to **Render Dashboard** → Your Static Site → **Settings**
+  2. Scroll down to **"Redirects/Rewrites"** section (or look for "Custom Redirects")
+  3. Click **"Add Redirect"** or **"Add Rewrite"**
+  4. Configure:
+     - **Source Path**: `/*` (matches all paths)
+     - **Destination**: `/index.html`
+     - **Type**: **Rewrite** (200 status code) - This is important! Use rewrite, not redirect
+  5. **Save** and the site will automatically redeploy
+  6. Wait for deployment to complete and test
+- **Alternative**: If Render doesn't have a redirects section, the `_redirects` file in `client/public/` should work, but you may need to ensure it's copied to the build directory. Check that the file exists in `client/build/_redirects` after building locally.
 
 ---
 
