@@ -14,11 +14,11 @@ require('dotenv').config();
 async function createProductionAdmin() {
   try {
     // Get credentials from environment variables or use defaults
-    const email = process.env.EMAIL || 'admin@wits-workouts.com';
-    const password = process.env.PASSWORD || 'Admin123!';
-    const username = process.env.USERNAME || 'admin';
+    const email = process.env.EMAIL || 'kit@wellnessintheschools.org';
+    const password = process.env.PASSWORD || 'Wellness2025!';
+    const username = process.env.USERNAME || 'kit';
     const schoolName = process.env.SCHOOL_NAME || 'Wellness in Schools';
-    const address = process.env.ADDRESS || 'Wellness in Schools';
+    const address = process.env.ADDRESS || 'New York, NY';
 
     // Connect to MongoDB
     const mongoUri = process.env.MONGODB_URI;
