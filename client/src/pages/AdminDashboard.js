@@ -20,7 +20,7 @@ const AdminDashboard = () => {
     title: '',
     description: '',
     category: 'workout-sports',
-    subcategory: 'pre-k-2',
+    subcategory: ['pre-k-2'], // Array of subcategories
     googleDriveUrl: '',
     instructor: '',
     duration: 300, // 5 minutes in seconds
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
     title: '',
     description: '',
     category: 'workout-sports',
-    subcategory: 'pre-k-2',
+    subcategory: ['pre-k-2'], // Array of subcategories
     googleDriveUrl: '',
     instructor: '',
     duration: 300, // 5 minutes in seconds
@@ -368,6 +368,13 @@ const AdminDashboard = () => {
         }
       }
 
+      // Validate that at least one subcategory is selected
+      if (!newVideo.subcategory || newVideo.subcategory.length === 0) {
+        alert('Please select at least one subcategory');
+        setLoading(false);
+        return;
+      }
+      
       const videoData = {
         ...newVideo,
         googleDriveId: driveId,
@@ -386,7 +393,7 @@ const AdminDashboard = () => {
         title: '',
         description: '',
         category: 'workout-sports',
-        subcategory: 'pre-k-2',
+        subcategory: ['pre-k-2'],
         googleDriveUrl: '',
         instructor: '',
         duration: 300,
@@ -445,7 +452,7 @@ const AdminDashboard = () => {
       title: video.title,
       description: video.description || '',
       category: video.category,
-      subcategory: video.subcategory || 'pre-k-2',
+      subcategory: Array.isArray(video.subcategory) ? video.subcategory : [video.subcategory || 'pre-k-2'],
       googleDriveUrl: video.googleDriveUrl,
       instructor: video.instructor || '',
       duration: video.duration || 300,
@@ -482,6 +489,13 @@ const AdminDashboard = () => {
         }
       }
 
+      // Validate that at least one subcategory is selected
+      if (!editVideo.subcategory || editVideo.subcategory.length === 0) {
+        alert('Please select at least one subcategory');
+        setLoading(false);
+        return;
+      }
+      
       const videoData = {
         ...editVideo,
         tags: editVideo.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
@@ -496,7 +510,7 @@ const AdminDashboard = () => {
         title: '',
         description: '',
         category: 'workout-sports',
-        subcategory: 'pre-k-2',
+        subcategory: ['pre-k-2'],
         googleDriveUrl: '',
         instructor: '',
         duration: 300,
@@ -927,17 +941,37 @@ const AdminDashboard = () => {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Subcategory</label>
-                        <select
-                          value={newVideo.subcategory}
-                          onChange={(e) => setNewVideo({...newVideo, subcategory: e.target.value})}
-                          className="form-input"
-                          required
-                        >
+                        <label className="form-label">Subcategory (Select all that apply)</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                           {subcategories.map(sub => (
-                            <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            <label key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={newVideo.subcategory.includes(sub.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setNewVideo({
+                                      ...newVideo,
+                                      subcategory: [...newVideo.subcategory, sub.id]
+                                    });
+                                  } else {
+                                    setNewVideo({
+                                      ...newVideo,
+                                      subcategory: newVideo.subcategory.filter(s => s !== sub.id)
+                                    });
+                                  }
+                                }}
+                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                              />
+                              <span>{sub.name}</span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
+                        {newVideo.subcategory.length === 0 && (
+                          <p style={{ color: '#ff6b6b', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                            Please select at least one subcategory
+                          </p>
+                        )}
                       </div>
 
                       <div className="form-group">
@@ -1103,17 +1137,37 @@ const AdminDashboard = () => {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Subcategory</label>
-                        <select
-                          value={editVideo.subcategory}
-                          onChange={(e) => setEditVideo({...editVideo, subcategory: e.target.value})}
-                          className="form-input"
-                          required
-                        >
+                        <label className="form-label">Subcategory (Select all that apply)</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                           {subcategories.map(sub => (
-                            <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            <label key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={editVideo.subcategory.includes(sub.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setEditVideo({
+                                      ...editVideo,
+                                      subcategory: [...editVideo.subcategory, sub.id]
+                                    });
+                                  } else {
+                                    setEditVideo({
+                                      ...editVideo,
+                                      subcategory: editVideo.subcategory.filter(s => s !== sub.id)
+                                    });
+                                  }
+                                }}
+                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                              />
+                              <span>{sub.name}</span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
+                        {editVideo.subcategory.length === 0 && (
+                          <p style={{ color: '#ff6b6b', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                            Please select at least one subcategory
+                          </p>
+                        )}
                       </div>
 
                       <div className="form-group">
@@ -1261,7 +1315,7 @@ const AdminDashboard = () => {
                         <div>
                           <h5>{video.title}</h5>
                           <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
-                            {video.category} • {video.subcategory || 'pre-k-2'} • {video.duration ? Math.round(video.duration / 60) + 'min' : '5min'} • {video.instructor}
+                            {video.category} • {Array.isArray(video.subcategory) ? video.subcategory.join(', ') : (video.subcategory || 'pre-k-2')} • {video.duration ? Math.round(video.duration / 60) + 'min' : '5min'} • {video.instructor}
                           </p>
                           <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
                             {video.description}

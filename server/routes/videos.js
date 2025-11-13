@@ -14,7 +14,13 @@ router.get('/category/:category', async (req, res) => {
     
     let query = { category, isActive: true };
     if (subcategory) {
-      query.subcategory = subcategory;
+      // Support both single subcategory (for backward compatibility) and array
+      // If subcategory is an array, use $in operator
+      if (Array.isArray(subcategory)) {
+        query.subcategory = { $in: subcategory };
+      } else {
+        query.subcategory = subcategory;
+      }
     }
     
     const videos = await Video.find(query).sort({ order: 1, createdAt: -1 });
@@ -40,8 +46,13 @@ router.get('/featured', async (req, res) => {
 router.get('/subcategory/:subcategory', async (req, res) => {
   try {
     const { subcategory } = req.params;
+    // Support array of subcategories (comma-separated) or single subcategory
+    const subcategories = subcategory.includes(',') 
+      ? subcategory.split(',').map(s => s.trim())
+      : [subcategory];
+    
     const videos = await Video.find({ 
-      subcategory, 
+      subcategory: { $in: subcategories },
       isActive: true 
     }).sort({ order: 1, createdAt: -1 });
     res.json(videos);

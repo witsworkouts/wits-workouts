@@ -203,9 +203,14 @@ export const VideoProvider = ({ children }) => {
       const res = await axiosInstance.get(`/api/videos/category/${category}`);
       let videos = res.data;
       
-      // Filter by subcategory
+      // Filter by subcategory (support both array and single value for backward compatibility)
       if (subcategory) {
-        videos = videos.filter(video => video.subcategory === subcategory);
+        videos = videos.filter(video => {
+          const videoSubcategories = Array.isArray(video.subcategory) 
+            ? video.subcategory 
+            : [video.subcategory];
+          return videoSubcategories.includes(subcategory);
+        });
       }
       
       // Filter by duration (within 1 minute tolerance)

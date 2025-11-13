@@ -16,9 +16,9 @@ const videoSchema = new mongoose.Schema({
     enum: ['workout-sports', 'dance-move', 'yoga', 'mindfulness']
   },
   subcategory: {
-    type: String,
+    type: [String],
     enum: ['pre-k-2', 'grades-3-4', 'grades-5-8', 'high-school'],
-    default: 'pre-k-2'
+    default: ['pre-k-2']
   },
   googleDriveId: {
     type: String,
