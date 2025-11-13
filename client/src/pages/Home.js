@@ -76,7 +76,8 @@ const Home = () => {
   }, [hasLoadedInitial, previousState, location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCategoryChange = (category) => {
-    // Clear active subcategory when clicking on a category directly
+    // Clear search query and active subcategory when clicking on a category
+    setSearchQuery('');
     setActiveSubcategory(null);
     
     if (category === 'featured') {
@@ -106,9 +107,13 @@ const Home = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      // Clear active subcategory when searching
+      setActiveSubcategory(null);
+      // Search across all categories
       await searchVideos(searchQuery);
     } else {
-      // If search is cleared, reload featured videos
+      // If search is cleared, reload featured videos and reset state
+      setActiveSubcategory(null);
       loadFeaturedVideos();
     }
   };
@@ -249,6 +254,7 @@ const Home = () => {
               type="button"
               onClick={() => {
                 setSearchQuery('');
+                setActiveSubcategory(null);
                 loadFeaturedVideos();
               }}
               className="btn btn-danger"
@@ -281,6 +287,7 @@ const Home = () => {
               {currentCategory && 
                currentCategory !== 'featured' && 
                currentCategory !== 'saved' && 
+               currentCategory !== 'search' &&
                !activeSubcategory && (
                 <div style={{ 
                   textAlign: 'center', 
@@ -291,15 +298,15 @@ const Home = () => {
                   Please select a subcategory to view videos.
                 </div>
               )}
-              {/* Show videos only if subcategory is selected or for featured/saved */}
-              {((currentCategory === 'featured' || currentCategory === 'saved' || activeSubcategory) && videos.length > 0) && (
+              {/* Show videos for featured, saved, search, or when subcategory is selected */}
+              {((currentCategory === 'featured' || currentCategory === 'saved' || currentCategory === 'search' || activeSubcategory) && videos.length > 0) && (
                 <HorizontalVideoGrid
                   videos={videos}
                   onVideoClick={handleVideoClick}
                 />
               )}
-              {/* Show empty state if no videos found (only when subcategory is selected) */}
-              {((currentCategory === 'featured' || currentCategory === 'saved' || activeSubcategory) && videos.length === 0 && !loading) && (
+              {/* Show empty state if no videos found */}
+              {((currentCategory === 'featured' || currentCategory === 'saved' || currentCategory === 'search' || activeSubcategory) && videos.length === 0 && !loading) && (
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '3rem',
