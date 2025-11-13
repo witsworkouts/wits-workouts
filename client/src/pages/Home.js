@@ -87,7 +87,9 @@ const Home = () => {
       loadSavedVideos();
       // This will be handled by the loadSavedVideos function
     } else {
-      loadVideosByCategory(category);
+      // For regular categories, don't load videos until a subcategory is selected
+      // Set category in context but don't load videos (clearVideos = true)
+      loadVideosByCategory(category, true);
     }
   };
 
@@ -274,10 +276,40 @@ const Home = () => {
           {loading ? (
             <div className="loading">Loading videos...</div>
           ) : (
-            <HorizontalVideoGrid
-              videos={videos}
-              onVideoClick={handleVideoClick}
-            />
+            <>
+              {/* Show message when category is selected but no subcategory */}
+              {currentCategory && 
+               currentCategory !== 'featured' && 
+               currentCategory !== 'saved' && 
+               !activeSubcategory && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontSize: '1.1rem'
+                }}>
+                  Please select a subcategory to view videos.
+                </div>
+              )}
+              {/* Show videos only if subcategory is selected or for featured/saved */}
+              {((currentCategory === 'featured' || currentCategory === 'saved' || activeSubcategory) && videos.length > 0) && (
+                <HorizontalVideoGrid
+                  videos={videos}
+                  onVideoClick={handleVideoClick}
+                />
+              )}
+              {/* Show empty state if no videos found (only when subcategory is selected) */}
+              {((currentCategory === 'featured' || currentCategory === 'saved' || activeSubcategory) && videos.length === 0 && !loading) && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontSize: '1.1rem'
+                }}>
+                  No videos found.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -160,13 +160,19 @@ export const VideoProvider = ({ children }) => {
   }, [loadCategories, loadFeaturedVideos]);
 
   // Load videos by category
-  const loadVideosByCategory = async (category) => {
+  const loadVideosByCategory = async (category, clearVideos = false) => {
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_CURRENT_CATEGORY', payload: category });
     try {
-      const res = await retryRequest(() => axiosInstance.get(`/api/videos/category/${category}`));
-      dispatch({ type: 'SET_VIDEOS', payload: res.data });
-      dispatch({ type: 'SET_CURRENT_CATEGORY', payload: category });
-      dispatch({ type: 'SET_LOADING', payload: false });
+      if (clearVideos) {
+        // If clearVideos is true, just set category without loading videos
+        dispatch({ type: 'SET_VIDEOS', payload: [] });
+        dispatch({ type: 'SET_LOADING', payload: false });
+      } else {
+        const res = await retryRequest(() => axiosInstance.get(`/api/videos/category/${category}`));
+        dispatch({ type: 'SET_VIDEOS', payload: res.data });
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
     } catch (error) {
       let message = 'Failed to load videos';
       
