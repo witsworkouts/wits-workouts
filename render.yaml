@@ -1,0 +1,40 @@
+services:
+  # Backend API Service
+  - type: web
+    name: wellness-in-schools-api
+    env: node
+    plan: starter  # Change to professional if needed
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: EMAIL_SERVICE
+        value: workspace
+      - key: EMAIL_USER
+        sync: false  # Set manually in Render dashboard
+      - key: EMAIL_PASS
+        sync: false  # Set manually in Render dashboard
+      - key: EMAIL_FROM
+        sync: false  # Set manually in Render dashboard
+      - key: CONTACT_EMAIL
+        value: kit@wellnessintheschools.org
+      - key: CLIENT_URL
+        value: https://wits-workouts.com
+
+  # Frontend Static Site
+  - type: web
+    name: wellness-in-schools
+    env: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: client/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://api.wits-workouts.com  # Update after backend is deployed
+

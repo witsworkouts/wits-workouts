@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combine Logos</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .logo1, .logo2 {
+            max-height: 100px;
+            width: auto;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 20px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="logo-container">
+            <img id="logo1" src="client/src/img/logo1.png" alt="Logo 1" class="logo1">
+            <img id="logo2" src="client/src/img/logo2.png" alt="Logo 2" class="logo2">
+        </div>
+        
+        <div class="controls">
+            <button onclick="combineLogos()">Combine Logos</button>
+            <button onclick="downloadLogo()">Download Combined Logo</button>
+        </div>
+        
+        <div style="text-align: center;">
+            <canvas id="combinedCanvas" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function combineLogos() {
+            const logo1 = document.getElementById('logo1');
+            const logo2 = document.getElementById('logo2');
+            const canvas = document.getElementById('combinedCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Wait for images to load
+            Promise.all([
+                new Promise(resolve => {
+                    logo1.onload = resolve;
+                    if (logo1.complete) resolve();
+                }),
+                new Promise(resolve => {
+                    logo2.onload = resolve;
+                    if (logo2.complete) resolve();
+                })
+            ]).then(() => {
+                // Calculate dimensions
+                const logo1Height = Math.min(logo1.naturalHeight, 150);
+                const logo1Width = (logo1.naturalWidth * logo1Height) / logo1.naturalHeight;
+                
+                const logo2Height = Math.min(logo2.naturalHeight, 150);
+                const logo2Width = (logo2.naturalWidth * logo2Height) / logo2.naturalHeight;
+                
+                const totalWidth = logo1Width + logo2Width + 20; // 20px gap
+                const maxHeight = Math.max(logo1Height, logo2Height);
+                
+                // Set canvas size
+                canvas.width = totalWidth;
+                canvas.height = maxHeight;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw logo1
+                ctx.drawImage(logo1, 0, (maxHeight - logo1Height) / 2, logo1Width, logo1Height);
+                
+                // Draw logo2
+                ctx.drawImage(logo2, logo1Width + 20, (maxHeight - logo2Height) / 2, logo2Width, logo2Height);
+                
+                console.log('Logos combined successfully!');
+            });
+        }
+        
+        function downloadLogo() {
+            const canvas = document.getElementById('combinedCanvas');
+            const link = document.createElement('a');
+            link.download = 'combined_logo.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Auto-combine when page loads
+        window.onload = () => {
+            setTimeout(combineLogos, 1000);
+        };
+    </script>
+</body>
+</html>
