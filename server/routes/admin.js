@@ -3,29 +3,52 @@ const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const stream = require('stream');
 const Video = require('../models/Video');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Configure multer for thumbnail uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/thumbnails');
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+// Configure Cloudinary (if credentials are provided, otherwise use local storage)
+const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
+                      process.env.CLOUDINARY_API_KEY && 
+                      process.env.CLOUDINARY_API_SECRET;
+
+let cloudinary;
+if (useCloudinary) {
+  cloudinary = require('cloudinary').v2;
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+// Configure multer storage - use memory for Cloudinary, disk for local
+let storage;
+if (useCloudinary) {
+  // Use memory storage (will upload to Cloudinary in the route handler)
+  storage = multer.memoryStorage();
+} else {
+  // Use local disk storage (for development)
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(__dirname, '../uploads/thumbnails');
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      // Generate unique filename: timestamp-random-originalname
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, `thumbnail-${uniqueSuffix}${ext}`);
     }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename: timestamp-random-originalname
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, `thumbnail-${uniqueSuffix}${ext}`);
-  }
-});
+  });
+}
 
 // File filter for images only
 const fileFilter = (req, file, cb) => {
@@ -143,14 +166,47 @@ router.post('/videos/upload-thumbnail', upload.single('thumbnail'), (req, res) =
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    
+    if (useCloudinary) {
+      // Upload to Cloudinary
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'wits-workouts/thumbnails',
+          resource_type: 'image',
+          transformation: [
+            { width: 800, height: 450, crop: 'limit' }
+          ]
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            return res.status(500).json({ 
+              message: 'Error uploading to Cloudinary', 
+              error: error.message 
+            });
+          }
+          
+          res.json({ 
+            message: 'Thumbnail uploaded successfully',
+            thumbnailUrl: result.secure_url,
+            filename: result.public_id
+          });
+        }
+      );
 
-    // Return the URL path for the uploaded thumbnail
-    const thumbnailUrl = `/uploads/thumbnails/${req.file.filename}`;
-    res.json({ 
-      message: 'Thumbnail uploaded successfully',
-      thumbnailUrl: thumbnailUrl,
-      filename: req.file.filename
-    });
+      // Create a buffer stream from the file buffer and pipe to Cloudinary
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(req.file.buffer);
+      bufferStream.pipe(uploadStream);
+    } else {
+      // Local storage - return relative path
+      const thumbnailUrl = `/uploads/thumbnails/${req.file.filename}`;
+      res.json({ 
+        message: 'Thumbnail uploaded successfully',
+        thumbnailUrl: thumbnailUrl,
+        filename: req.file.filename
+      });
+    }
   } catch (error) {
     console.error('Thumbnail upload error:', error);
     res.status(500).json({ message: 'Error uploading thumbnail', error: error.message });

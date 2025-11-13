@@ -440,19 +440,38 @@ You can also use the existing scripts:
 
 **Note**: Render's filesystem is ephemeral. Uploaded files (thumbnails) will be lost on redeploy.
 
-### Solutions:
+### Solution: Cloudinary (Recommended - Already Implemented!)
 
-1. **Use Cloud Storage** (Recommended):
-   - Set up AWS S3, Cloudinary, or similar
-   - Update multer configuration to upload directly to cloud storage
-   - Update thumbnail URLs to use cloud storage URLs
+✅ **Cloudinary integration is already set up in the code!** You just need to configure it:
 
-2. **Use Render Disk** (Temporary):
+1. **Follow the setup guide**: See `CLOUDINARY_SETUP.md` for detailed instructions
+2. **Quick setup**:
+   - Sign up at [cloudinary.com](https://cloudinary.com) (free tier available)
+   - Get your credentials from the dashboard
+   - Add to Render environment variables:
+     ```
+     CLOUDINARY_CLOUD_NAME=your-cloud-name
+     CLOUDINARY_API_KEY=your-api-key
+     CLOUDINARY_API_SECRET=your-api-secret
+     ```
+   - Redeploy your backend
+3. **How it works**:
+   - If Cloudinary credentials are set → thumbnails upload to Cloudinary (permanent)
+   - If not set → thumbnails stored locally (lost on redeploy)
+   - Works automatically - no code changes needed after setup
+
+### Alternative Solutions:
+
+1. **AWS S3** (if you prefer):
+   - Set up S3 bucket
+   - Install `aws-sdk` and `multer-s3`
+   - Update upload configuration
+   - More complex but more control
+
+2. **Render Disk** (Not Recommended):
    - Render provides persistent disk storage
    - Configure multer to use persistent disk path
-   - **Note**: This is not recommended for production
-
-For now, the app will work, but uploaded thumbnails may be lost on redeploy.
+   - **Note**: Not recommended for production, limited storage
 
 ---
 
