@@ -161,15 +161,18 @@ CLIENT_URL=https://wits-workouts.com
    - **Name**: `wellness-in-schools` (or your preferred name)
    - **Branch**: `main`
    - **Root Directory**: `client`
-   - **Build Command**: `npm install && npm run build`
+   - **Build Command**: `NODE_OPTIONS=--openssl-legacy-provider npm install && NODE_OPTIONS=--openssl-legacy-provider npm run build`
    - **Publish Directory**: `build`
    - **Auto-Deploy**: `Yes` (deploys automatically on git push)
 
 3. **Environment Variables**
-   Add this environment variable:
+   Add these environment variables:
    ```
    REACT_APP_API_URL=https://wellness-in-schools-api.onrender.com
+   NODE_OPTIONS=--openssl-legacy-provider
    ```
+   
+   **Note**: The `NODE_OPTIONS=--openssl-legacy-provider` is required because `react-scripts` 4.0.3 is not compatible with Node.js v17+. This flag enables legacy OpenSSL algorithms.
 
 4. **Create Static Site**
    - Click "Create Static Site"
@@ -276,6 +279,9 @@ Once your domain is live, update environment variables:
 ```
 CLIENT_URL=https://wits-workouts.com
 ```
+**Important**: 
+- Don't include a trailing slash (use `https://wits-workouts.com` not `https://wits-workouts.com/`)
+- The CORS configuration automatically allows both `www.wits-workouts.com` and `wits-workouts.com`, so either will work
 
 ### Frontend Static Site:
 ```
@@ -344,10 +350,15 @@ For now, the app will work, but uploaded thumbnails may be lost on redeploy.
 - Verify all environment variables are set
 - Check Render logs for errors
 
-### Frontend can't connect to backend
-- Verify `REACT_APP_API_URL` is set correctly
-- Check CORS settings in backend
-- Verify backend is running
+### Frontend can't connect to backend / CORS errors
+- Verify `REACT_APP_API_URL` is set correctly in frontend environment variables
+- Check CORS settings in backend - the code now automatically allows both `www` and non-`www` versions
+- **CORS Error Fix**: If you get "CORS header 'Access-Control-Allow-Origin' does not match" error:
+  - Make sure `CLIENT_URL` in backend matches your frontend domain (with or without www)
+  - The backend now automatically allows both versions (www and non-www)
+  - Check Render logs for "CORS blocked origin" messages to see what origin is being rejected
+  - Ensure `CLIENT_URL` doesn't have a trailing slash: use `https://wits-workouts.com` not `https://wits-workouts.com/`
+- Verify backend is running and accessible
 
 ### Domain not working
 - Wait for DNS propagation (up to 48 hours)
@@ -358,6 +369,15 @@ For now, the app will work, but uploaded thumbnails may be lost on redeploy.
 - Verify Google Workspace app password is correct
 - Check `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS` are set
 - Test email configuration
+
+### Frontend build fails with "digital envelope routines::unsupported" error
+- This error occurs when using older `react-scripts` (v4.x) with Node.js v17+
+- **Solution**: Update the build command in Render to:
+  ```
+  NODE_OPTIONS=--openssl-legacy-provider npm install && NODE_OPTIONS=--openssl-legacy-provider npm run build
+  ```
+- **Alternative**: Add `NODE_OPTIONS=--openssl-legacy-provider` as an environment variable in Render
+- **Long-term fix**: Upgrade `react-scripts` to v5.x in `package.json` (requires testing)
 
 ---
 

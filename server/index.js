@@ -30,9 +30,55 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS
+// CORS - Allow both www and non-www versions of the domain
+const allowedOrigins = (() => {
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+  const origins = [clientUrl];
+  
+  // If production URL, also allow www version
+  if (clientUrl.startsWith('https://')) {
+    const url = new URL(clientUrl);
+    if (!url.hostname.startsWith('www.')) {
+      // Add www version
+      origins.push(`https://www.${url.hostname}${url.pathname === '/' ? '' : url.pathname}`);
+    } else {
+      // Add non-www version
+      const nonWwwHostname = url.hostname.replace(/^www\./, '');
+      origins.push(`https://${nonWwwHostname}${url.pathname === '/' ? '' : url.pathname}`);
+    }
+  }
+  
+  return origins;
+})();
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Normalize origin (remove trailing slash for comparison)
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    
+    // Check if origin (normalized) is in allowed list
+    const isAllowed = allowedOrigins.some(allowed => {
+      const normalizedAllowed = allowed.endsWith('/') ? allowed.slice(0, -1) : allowed;
+      return normalizedOrigin === normalizedAllowed;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // In development, allow localhost
+      if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost')) {
+        callback(null, true);
+      } else {
+        // Log for debugging
+        console.log('CORS blocked origin:', origin);
+        console.log('Allowed origins:', allowedOrigins);
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true
 }));
 
