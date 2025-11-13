@@ -308,9 +308,19 @@ select.form-input option {
     right: -20px;
   }
   
+  .category-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem !important;
+    padding: 0 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
   .category-tab {
-    font-size: 1.1rem;
-    padding: 18px 16px;
+    font-size: 1rem !important;
+    padding: 14px 10px !important;
     white-space: normal !important;
     overflow: hidden !important;
     text-overflow: clip !important;
@@ -318,13 +328,33 @@ select.form-input option {
     overflow-wrap: break-word !important;
     word-break: break-word !important;
     line-height: 1.3 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
   
-  /* Ensure Featured Videos and Saved Videos don't get truncated on tablet landscape */
+  /* All category tabs - 3 per row in 2 rows for tablet landscape */
   .category-tabs > button.category-tab:first-child,
-  .category-tabs > button.category-tab:last-child {
-    min-width: fit-content !important;
-    max-width: none !important;
+  .category-tabs > button.category-tab:last-child,
+  .category-tabs > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .category-tabs > div > button.category-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .category-tabs > div {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
   
   h1 {
@@ -383,20 +413,20 @@ select.form-input option {
   }
   
   .category-tabs {
-    flex-wrap: wrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.5rem !important;
     padding: 0 0.75rem !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
-    justify-content: flex-start !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
   
   .category-tab {
-    font-size: 0.85rem !important;
-    padding: 10px 8px !important;
+    font-size: 0.9rem !important;
+    padding: 12px 8px !important;
     white-space: normal !important;
     overflow: hidden !important;
     text-overflow: clip !important;
@@ -410,6 +440,7 @@ select.form-input option {
     justify-content: center !important;
     text-align: center !important;
     width: 100% !important;
+    min-width: 0 !important;
   }
   
   /* Ensure text wraps properly in tablet */
@@ -420,52 +451,30 @@ select.form-input option {
     display: inline-block !important;
   }
   
-  /* Featured Videos - ensure enough space, allow wrapping */
-  .category-tabs > button.category-tab:first-child {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
+  /* All category tabs - 3 per row in 2 rows */
+  .category-tabs > button.category-tab:first-child,
+  .category-tabs > button.category-tab:last-child,
+  .category-tabs > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
-  /* Workout & Sports - larger (2nd child) */
-  .category-tabs > div:nth-child(2) > button.category-tab {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
+  /* Category buttons inside wrapper divs */
+  .category-tabs > div > button.category-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
-  /* Dance & Move - larger (3rd child) */
-  .category-tabs > div:nth-child(3) > button.category-tab {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
-  }
-  
-  /* Yoga - larger, no gap (4th child) */
-  .category-tabs > div:nth-child(4) > button.category-tab {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
-  }
-  
-  /* Mindfulness - larger, no gap (5th child) */
-  .category-tabs > div:nth-child(5) > button.category-tab {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
-  }
-  
-  /* Saved Videos - ensure enough space, allow wrapping */
-  .category-tabs > button.category-tab:last-child {
-    flex: 0 0 auto !important;
-    min-width: fit-content !important;
-    max-width: calc(33.333% - 0.25rem) !important;
-    width: auto !important;
+  /* Ensure wrapper divs take full grid cell */
+  .category-tabs > div {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
   
   /* Ensure video grid is 1 column on tablet too */
@@ -669,6 +678,7 @@ select.form-input option {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 
 .category-tab {
   padding: 20px 20px;
@@ -931,21 +941,22 @@ select.form-input option {
   }
   
   .category-tabs {
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 0.5rem !important;
-    padding: 0 0.5rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
-    justify-content: flex-start !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
   
+  /* All category tabs - 2 per row, 3 rows total, equal width */
   .category-tab {
-    font-size: 0.85rem !important;
-    padding: 12px 8px !important;
+    font-size: 0.8rem !important;
+    padding: 10px 6px !important;
     white-space: normal !important;
     overflow: hidden !important;
     text-overflow: clip !important;
@@ -959,12 +970,13 @@ select.form-input option {
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    max-height: none !important;
-    min-height: 44px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
     width: 100% !important;
-    flex: 0 0 auto !important;
-    min-width: 100% !important;
+    min-width: 0 !important;
     max-width: 100% !important;
+    margin: 0 !important;
   }
   
   /* Ensure text wraps to multiple lines if needed and stays within container */
@@ -981,15 +993,40 @@ select.form-input option {
     margin-left: 2px !important;
   }
   
-  /* All category tabs take full width - one per row */
+  /* All category tabs and wrapper divs - 2 per row with equal width */
   .category-tabs > button.category-tab:first-child,
   .category-tabs > button.category-tab:last-child,
-  .category-tabs > div > button.category-tab {
-    flex: 0 0 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
+  .category-tabs > div {
     width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
   }
+  
+  /* Category buttons inside wrapper divs - same width */
+  .category-tabs > div > button.category-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px 6px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure wrapper divs take full grid cell */
+  .category-tabs > div {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  
   
   /* Ensure all video grids are 1 column on mobile */
   .video-grid,
@@ -1063,6 +1100,18 @@ select.form-input option {
   
   .card {
     padding: 1rem;
+  }
+  
+  /* Center logo on mobile - make it smaller to fit fully */
+  .center-logo-container {
+    padding: 0 1rem !important;
+  }
+  
+  .center-logo {
+    height: 80px !important;
+    width: auto !important;
+    max-width: calc(100% - 2rem) !important;
+    object-fit: contain !important;
   }
 }
 

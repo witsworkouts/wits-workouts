@@ -135,21 +135,29 @@ const Home = () => {
       <ScrollingBanner />
       
       {/* Header with branding */}
-      <div style={{ 
-        textAlign: 'center', 
-        marginTop: '2rem',
-        marginBottom: '3rem',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%'
-      }}>
+      <div 
+        className="center-logo-container"
+        style={{ 
+          textAlign: 'center', 
+          marginTop: '2rem',
+          marginBottom: '3rem',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          padding: '0 1rem',
+          boxSizing: 'border-box'
+        }}
+      >
         <img 
           src={logo} 
           alt="Wellness in Schools Logo" 
+          className="center-logo"
           style={{ 
             height: '120px', 
             width: 'auto',
+            maxWidth: '100%',
+            objectFit: 'contain',
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))'
           }} 
         />

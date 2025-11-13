@@ -37,13 +37,17 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
   };
 
   const handleCategoryHover = (categoryId) => {
-    // Only handle hover for non-touch devices
+    // Only handle hover for non-touch devices - double check to prevent any hover on mobile
     if (!isTouchDevice()) {
       // Clear any existing timeout
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
       setShowSubcategories(categoryId);
+    } else {
+      // On touch devices, ensure dropdown doesn't open via hover
+      // Only allow opening via click
+      return;
     }
   };
 
@@ -54,6 +58,10 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
       hoverTimeoutRef.current = setTimeout(() => {
         setShowSubcategories(null);
       }, 150);
+    } else {
+      // On touch devices, don't close on mouse leave
+      // Only close via click or click outside
+      return;
     }
   };
 
@@ -105,22 +113,22 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
           color: 'white',
           transition: 'all 0.3s ease'
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={!isTouchDevice() ? (e) => {
           if (currentCategory !== 'featured') {
             e.target.style.background = 'linear-gradient(45deg, #FF6B35, #f7981e)';
             e.target.style.borderColor = '#FF6B35';
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.boxShadow = '0 4px 15px #FF6B3540';
           }
-        }}
-        onMouseLeave={(e) => {
+        } : undefined}
+        onMouseLeave={!isTouchDevice() ? (e) => {
           if (currentCategory !== 'featured') {
             e.target.style.background = 'linear-gradient(45deg, #FF6B35, #f7981e)';
             e.target.style.borderColor = '#FF6B35';
             e.target.style.transform = 'translateY(0)';
             e.target.style.boxShadow = 'none';
           }
-        }}
+        } : undefined}
         onClick={() => handleCategoryClick('featured')}
       >
         Featured Videos
@@ -131,8 +139,8 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
         <div 
           key={category.id} 
           style={{ position: 'relative' }}
-          onMouseEnter={() => handleCategoryHover(category.id)}
-          onMouseLeave={handleCategoryLeave}
+          onMouseEnter={!isTouchDevice() ? () => handleCategoryHover(category.id) : undefined}
+          onMouseLeave={!isTouchDevice() ? handleCategoryLeave : undefined}
         >
           <button
             className={`category-tab ${currentCategory === category.id ? 'active' : ''}`}
@@ -145,22 +153,22 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
               color: currentCategory === category.id ? 'white' : 'white',
               transition: 'all 0.3s ease'
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={!isTouchDevice() ? (e) => {
               if (currentCategory !== category.id) {
                 e.target.style.background = `linear-gradient(45deg, ${category.color}, ${category.color})`;
                 e.target.style.borderColor = category.color;
                 e.target.style.transform = 'translateY(-2px)';
                 e.target.style.boxShadow = `0 4px 15px ${category.color}40`;
               }
-            }}
-            onMouseLeave={(e) => {
+            } : undefined}
+            onMouseLeave={!isTouchDevice() ? (e) => {
               if (currentCategory !== category.id) {
                 e.target.style.background = `linear-gradient(45deg, ${category.color}, ${category.color})`;
                 e.target.style.borderColor = category.color;
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = 'none';
               }
-            }}
+            } : undefined}
             onClick={(e) => handleCategoryClick(category.id, e)}
           >
             {category.name}
@@ -184,12 +192,12 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
               activeSubcategory={activeSubcategory}
               onSubcategoryChange={onSubcategoryChange}
               currentCategory={currentCategory}
-              onMouseEnter={() => {
+              onMouseEnter={!isTouchDevice() ? () => {
                 if (hoverTimeoutRef.current) {
                   clearTimeout(hoverTimeoutRef.current);
                 }
-              }}
-              onMouseLeave={handleCategoryLeave}
+              } : undefined}
+              onMouseLeave={!isTouchDevice() ? handleCategoryLeave : undefined}
             />
           )}
         </div>
@@ -206,22 +214,22 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
           color: 'white',
           transition: 'all 0.3s ease'
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={!isTouchDevice() ? (e) => {
           if (currentCategory !== 'saved') {
             e.target.style.background = 'linear-gradient(45deg, #28b6ea, #28b6ea)';
             e.target.style.borderColor = '#28b6ea';
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.boxShadow = '0 4px 15px #28b6ea40';
           }
-        }}
-        onMouseLeave={(e) => {
+        } : undefined}
+        onMouseLeave={!isTouchDevice() ? (e) => {
           if (currentCategory !== 'saved') {
             e.target.style.background = 'linear-gradient(45deg, #28b6ea, #28b6ea)';
             e.target.style.borderColor = '#28b6ea';
             e.target.style.transform = 'translateY(0)';
             e.target.style.boxShadow = 'none';
           }
-        }}
+        } : undefined}
         onClick={() => handleCategoryClick('saved')}
       >
         Saved Videos
