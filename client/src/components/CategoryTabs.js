@@ -4,6 +4,12 @@ import SubcategoryTabs from './SubcategoryTabs';
 const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSubcategory, onSubcategoryChange }) => {
   const [showSubcategories, setShowSubcategories] = useState(null);
   const hoverTimeoutRef = useRef(null);
+  
+  // Detect if device is touch-enabled
+  const isTouchDevice = () => {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  };
+  
   const getCategoryColor = (categoryId) => {
     const category = categories.find(cat => cat.id === categoryId);
     return category?.color || '#FF6B35';
@@ -14,24 +20,68 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
     return category?.name || categoryId;
   };
 
-  const handleCategoryClick = (categoryId) => {
+  const handleCategoryClick = (categoryId, e) => {
+    // For touch devices, toggle dropdown on click
+    if (isTouchDevice()) {
+      e.stopPropagation();
+      // If clicking the same category and dropdown is open, close it
+      if (showSubcategories === categoryId) {
+        setShowSubcategories(null);
+      } else {
+        // Open dropdown for this category
+        setShowSubcategories(categoryId);
+      }
+    }
+    // Always change the category
     onCategoryChange(categoryId);
   };
 
   const handleCategoryHover = (categoryId) => {
-    // Clear any existing timeout
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
+    // Only handle hover for non-touch devices
+    if (!isTouchDevice()) {
+      // Clear any existing timeout
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      setShowSubcategories(categoryId);
     }
-    setShowSubcategories(categoryId);
   };
 
   const handleCategoryLeave = () => {
-    // Add a small delay before hiding to allow moving to subcategory dropdown
-    hoverTimeoutRef.current = setTimeout(() => {
-      setShowSubcategories(null);
-    }, 150);
+    // Only handle leave for non-touch devices
+    if (!isTouchDevice()) {
+      // Add a small delay before hiding to allow moving to subcategory dropdown
+      hoverTimeoutRef.current = setTimeout(() => {
+        setShowSubcategories(null);
+      }, 150);
+    }
   };
+
+  // Close dropdown when clicking outside on touch devices
+  useEffect(() => {
+    if (!isTouchDevice() || !showSubcategories) return;
+
+    const handleClickOutside = (event) => {
+      // Check if click is outside the category tabs container and not on a category button
+      const categoryTabsElement = event.target.closest('.category-tabs');
+      const categoryButton = event.target.closest('.category-tab');
+      
+      // Only close if clicking outside the category tabs area
+      if (!categoryTabsElement) {
+        setShowSubcategories(null);
+      }
+    };
+
+    // Use a small delay to avoid conflicts with the click handler
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showSubcategories]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -111,7 +161,7 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
                 e.target.style.boxShadow = 'none';
               }
             }}
-            onClick={() => handleCategoryClick(category.id)}
+            onClick={(e) => handleCategoryClick(category.id, e)}
           >
             {category.name}
             {/* Dropdown indicator */}
