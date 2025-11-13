@@ -36,12 +36,15 @@ const ScrollingBanner = () => {
         width: '100vw',
         marginLeft: 'calc(-50vw + 50%)',
         marginRight: 'calc(-50vw + 50%)',
+        left: 0,
+        right: 0,
         overflow: 'hidden',
         background: banner.color,
         color: 'white',
         padding: '12px 0',
         marginBottom: '2rem',
-        position: 'relative'
+        position: 'relative',
+        boxSizing: 'border-box'
       }}
     >
       <div

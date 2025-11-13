@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axiosInstance from '../config/axios';
-import logo from '../img/logo.png';
+import logo from '../img/logo-initial.png';
 import backgroundImage from '../img/background.png';
 
 const PasswordProtection = () => {
@@ -116,16 +116,28 @@ const PasswordProtection = () => {
         width: '100%'
       }}>
         {/* Logo */}
-        <img 
-          src={logo} 
-          alt="Wellness in Schools Logo" 
-          style={{ 
-            height: '100px', 
-            width: 'auto',
-            marginBottom: '2rem',
-            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
-          }} 
-        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          marginBottom: '2rem',
+          width: '100%',
+          padding: '0 1rem',
+          boxSizing: 'border-box'
+        }}>
+          <img 
+            src={logo} 
+            alt="Wellness in Schools Logo" 
+            style={{ 
+              height: '100px', 
+              width: 'auto',
+              maxWidth: 'calc(100% - 2rem)',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+              margin: '0 auto'
+            }} 
+          />
+        </div>
 
         {/* Title */}
         <h1 style={{
