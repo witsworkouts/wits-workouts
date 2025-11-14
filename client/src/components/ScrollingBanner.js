@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../config/axios';
 
 const ScrollingBanner = () => {
+  // Animation duration in seconds - lower value = faster scrolling, higher value = slower scrolling
+  const SCROLL_DURATION = 20; // Change this value to adjust speed (e.g., 5 = faster, 20 = slower)
+  
   const [banner, setBanner] = useState({
     text: 'Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)',
     color: '#28b6ea',
@@ -51,7 +54,7 @@ const ScrollingBanner = () => {
         style={{
           display: 'flex',
           whiteSpace: 'nowrap',
-          animation: 'scroll 10s linear infinite',
+          animation: `scroll ${SCROLL_DURATION}s linear infinite`,
           willChange: 'transform',
           width: 'fit-content'
         }}
@@ -62,7 +65,7 @@ const ScrollingBanner = () => {
             style={{
               fontSize: '1rem',
               fontWeight: '600',
-              textTransform: 'uppercase',
+              textTransform: 'none',
               letterSpacing: '1px',
               padding: '0 50px',
               display: 'inline-block',

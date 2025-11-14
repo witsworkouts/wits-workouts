@@ -99,7 +99,7 @@ const VideoPlayer = () => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         padding: '2rem'
       }}>
         {/* Video Player - Full Screen */}
@@ -134,13 +134,16 @@ const VideoPlayer = () => {
           maxWidth: '1200px',
           marginTop: '2rem',
           padding: '0 2rem',
-          color: 'white'
+          color: 'white',
+          textAlign: 'left'
         }}>
           <h1 style={{ 
             marginBottom: '1rem', 
             color: 'white',
             fontSize: '1.5rem',
-            fontWeight: '600'
+            fontWeight: '600',
+            textAlign: 'left',
+            textTransform: 'none'
           }}>
             {currentVideo.title}
           </h1>
@@ -151,7 +154,8 @@ const VideoPlayer = () => {
             gap: '1.5rem', 
             fontSize: '0.95rem',
             marginBottom: '1rem',
-            color: 'rgba(255, 255, 255, 0.8)'
+            color: 'rgba(255, 255, 255, 0.8)',
+            textAlign: 'left'
           }}>
             {currentVideo.instructor && (
               <span>
@@ -174,7 +178,8 @@ const VideoPlayer = () => {
             <p style={{ 
               lineHeight: '1.6',
               color: 'rgba(255, 255, 255, 0.9)',
-              marginTop: '1rem'
+              marginTop: '1rem',
+              textAlign: 'left'
             }}>
               {currentVideo.description}
             </p>
