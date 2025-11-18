@@ -1451,15 +1451,26 @@ const AdminDashboard = () => {
                             onDragEnd={handleDragEnd}
                             style={{ 
                               cursor: 'grab',
-                              color: 'rgba(255, 255, 255, 0.7)',
+                              color: 'rgba(255, 255, 255, 0.8)',
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'center',
                               padding: '0.5rem',
-                              userSelect: 'none'
+                              userSelect: 'none',
+                              minWidth: '24px',
+                              minHeight: '24px'
                             }}
                             title="Drag to reorder"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = 'rgba(255, 255, 255, 1)';
+                              e.currentTarget.style.cursor = 'grabbing';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                              e.currentTarget.style.cursor = 'grab';
+                            }}
                           >
-                            <FaGripVertical size={18} />
+                            <FaGripVertical size={20} style={{ display: 'block' }} />
                           </div>
                           <div style={{ flex: 1 }}>
                             <h5>{video.title}</h5>
