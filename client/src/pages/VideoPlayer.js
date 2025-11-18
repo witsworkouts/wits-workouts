@@ -123,7 +123,29 @@ const VideoPlayer = () => {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             title={currentVideo.title}
             style={{
-              border: 'none'
+              border: 'none',
+              pointerEvents: 'auto'
+            }}
+          />
+          {/* Overlay to block pop-out button in top-right corner */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '80px',
+              height: '60px',
+              zIndex: 10,
+              pointerEvents: 'auto',
+              cursor: 'default'
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           />
         </div>

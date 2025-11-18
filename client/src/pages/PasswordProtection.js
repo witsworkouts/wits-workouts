@@ -4,12 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import axiosInstance from '../config/axios';
 import logo from '../img/logo-initial.png';
 import backgroundImage from '../img/background.png';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const PasswordProtection = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { verifyPassword } = useAuth();
 
@@ -162,15 +164,16 @@ const PasswordProtection = () => {
 
         {/* Password Form */}
         <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
-          <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={handlePasswordChange}
               placeholder="Enter password"
               style={{
                 width: '100%',
                 padding: '1rem',
+                paddingRight: '3.5rem',
                 fontSize: '1rem',
                 border: '2px solid #e1e5e9',
                 borderRadius: '10px',
@@ -182,6 +185,30 @@ const PasswordProtection = () => {
               onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
               disabled={isLoading}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#666',
+                padding: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'color 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.color = '#667eea'}
+              onMouseLeave={(e) => e.target.style.color = '#666'}
+              disabled={isLoading}
+            >
+              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </button>
           </div>
 
           {/* Error Message */}
