@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaVideo, FaChartBar, FaCog, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaUsers, FaVideo, FaChartBar, FaCog, FaPlus, FaEdit, FaTrash, FaGripVertical } from 'react-icons/fa';
 import axiosInstance from '../config/axios';
 import { parseBannerText } from '../utils/bannerTextParser';
 
@@ -59,6 +59,8 @@ const AdminDashboard = () => {
     isLowercase: false
   });
   const [bannerLoading, setBannerLoading] = useState(false);
+  const [draggedVideo, setDraggedVideo] = useState(null);
+  const [draggedOverVideo, setDraggedOverVideo] = useState(null);
   
   const [sitePasswordSettings, setSitePasswordSettings] = useState({
     newPassword: '',
@@ -449,6 +451,95 @@ const AdminDashboard = () => {
         console.error('Error deleting video:', error);
       }
     }
+  };
+
+  const handleDragStart = (e, video) => {
+    // Don't start drag if clicking on buttons or links
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedVideo(video);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target);
+  };
+
+  const handleDragOver = (e, video) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedVideo && draggedVideo._id !== video._id) {
+      setDraggedOverVideo(video);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDraggedOverVideo(null);
+  };
+
+  const handleDrop = async (e, targetVideo) => {
+    e.preventDefault();
+    setDraggedOverVideo(null);
+
+    if (!draggedVideo || draggedVideo._id === targetVideo._id) {
+      setDraggedVideo(null);
+      return;
+    }
+
+    // Get current indices
+    const draggedIndex = videos.findIndex(v => v._id === draggedVideo._id);
+    const targetIndex = videos.findIndex(v => v._id === targetVideo._id);
+
+    // Create a new array without the dragged video
+    const videosWithoutDragged = videos.filter(v => v._id !== draggedVideo._id);
+    
+    // Calculate the correct insertion index
+    let insertIndex;
+    if (draggedIndex < targetIndex) {
+      // Dragging down: insert after the target
+      // After removing the dragged item, targetIndex shifts left by 1
+      // So we insert at targetIndex (which places it after the target in the new array)
+      insertIndex = targetIndex;
+    } else {
+      // Dragging up: insert before the target
+      // The target position stays the same after removal
+      insertIndex = targetIndex;
+    }
+
+    // Insert the dragged video at the new position
+    const reorderedVideos = [
+      ...videosWithoutDragged.slice(0, insertIndex),
+      draggedVideo,
+      ...videosWithoutDragged.slice(insertIndex)
+    ].map((video, index) => ({
+      ...video,
+      order: index
+    }));
+
+    setVideos(reorderedVideos);
+
+    // Update order on server
+    try {
+      const videoOrders = reorderedVideos.map((video, index) => ({
+        videoId: video._id,
+        order: index
+      }));
+      const response = await axiosInstance.put('/api/admin/videos/reorder', { videoOrders });
+      console.log('Video order updated successfully:', response.data);
+    } catch (error) {
+      console.error('Error updating video order:', error);
+      console.error('Error response:', error.response?.data);
+      // Reload videos on error to revert to server state
+      loadVideos();
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to update video order. Please try again.';
+      alert(errorMessage);
+    }
+
+    setDraggedVideo(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedVideo(null);
+    setDraggedOverVideo(null);
   };
 
   const startEditVideo = (video) => {
@@ -1338,28 +1429,68 @@ const AdminDashboard = () => {
                 {videos.length > 0 ? (
                   <div style={{ display: 'grid', gap: '1rem' }}>
                     {videos.map((video) => (
-                      <div key={video._id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <h5>{video.title}</h5>
-                          <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
-                            {video.category} • {Array.isArray(video.subcategory) ? video.subcategory.join(', ') : (video.subcategory || 'pre-k-2')} • {video.duration ? Math.round(video.duration / 60) + 'min' : '5min'} • {video.instructor}
-                          </p>
-                          <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                            {video.description}
-                          </p>
+                      <div
+                        key={video._id}
+                        className="card"
+                        onDragOver={(e) => handleDragOver(e, video)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, video)}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          opacity: draggedVideo && draggedVideo._id === video._id ? 0.5 : 1,
+                          border: draggedOverVideo && draggedOverVideo._id === video._id ? '2px solid #28b6ea' : 'none',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                          <div
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, video)}
+                            onDragEnd={handleDragEnd}
+                            style={{ 
+                              cursor: 'grab',
+                              color: 'rgba(255, 255, 255, 0.7)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: '0.5rem',
+                              userSelect: 'none'
+                            }}
+                            title="Drag to reorder"
+                          >
+                            <FaGripVertical size={18} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <h5>{video.title}</h5>
+                            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
+                              {video.category} • {Array.isArray(video.subcategory) ? video.subcategory.join(', ') : (video.subcategory || 'pre-k-2')} • {video.duration ? Math.round(video.duration / 60) + 'min' : '5min'} • {video.instructor}
+                            </p>
+                            <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                              {video.description}
+                            </p>
+                          </div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
-                            onClick={() => startEditVideo(video)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditVideo(video);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
                             className="btn btn-secondary"
-                            style={{ padding: '8px 12px' }}
+                            style={{ padding: '8px 12px', cursor: 'pointer' }}
                           >
                             <FaEdit />
                           </button>
                           <button
-                            onClick={() => deleteVideo(video._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteVideo(video._id);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
                             className="btn btn-danger"
-                            style={{ padding: '8px 12px' }}
+                            style={{ padding: '8px 12px', cursor: 'pointer' }}
                           >
                             <FaTrash />
                           </button>

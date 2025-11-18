@@ -246,6 +246,50 @@ router.post('/videos', [
   }
 });
 
+// Update video order (must be before /videos/:id route to avoid route conflict)
+router.put('/videos/reorder', async (req, res) => {
+  try {
+    const { videoOrders } = req.body; // Array of { videoId, order }
+    
+    if (!Array.isArray(videoOrders)) {
+      return res.status(400).json({ message: 'videoOrders must be an array' });
+    }
+
+    if (videoOrders.length === 0) {
+      return res.status(400).json({ message: 'videoOrders array cannot be empty' });
+    }
+
+    // Update each video's order
+    const updatePromises = videoOrders.map(({ videoId, order }) => {
+      if (!videoId) {
+        throw new Error('videoId is required for each video order');
+      }
+      if (typeof order !== 'number') {
+        throw new Error('order must be a number');
+      }
+      return Video.findByIdAndUpdate(videoId, { order }, { new: true });
+    });
+
+    const results = await Promise.all(updatePromises);
+    
+    // Check if all updates were successful
+    const failedUpdates = results.filter(result => !result);
+    if (failedUpdates.length > 0) {
+      return res.status(400).json({ 
+        message: `Failed to update ${failedUpdates.length} video(s). Some video IDs may be invalid.` 
+      });
+    }
+    
+    res.json({ message: 'Video order updated successfully' });
+  } catch (error) {
+    console.error('Update video order error:', error);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: error.message 
+    });
+  }
+});
+
 // Update video
 router.put('/videos/:id', [
   body('title').notEmpty().withMessage('Title is required'),
@@ -295,7 +339,7 @@ router.delete('/videos/:id', async (req, res) => {
 router.get('/videos', async (req, res) => {
   try {
     const videos = await Video.find()
-      .sort({ createdAt: -1 });
+      .sort({ order: 1, createdAt: -1 });
     
     res.json(videos);
   } catch (error) {
