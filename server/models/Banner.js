@@ -21,6 +21,18 @@ const bannerSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isBold: {
+    type: Boolean,
+    default: false
+  },
+  isUnderlined: {
+    type: Boolean,
+    default: false
+  },
+  isLowercase: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -34,7 +46,10 @@ bannerSchema.statics.getBanner = async function() {
       text: 'Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)',
       color: '#28b6ea',
       hyperlink: '',
-      isActive: true
+      isActive: true,
+      isBold: false,
+      isUnderlined: false,
+      isLowercase: false
     });
   }
   return banner;

@@ -33,7 +33,19 @@ router.put('/', auth, [
   body('isActive')
     .optional()
     .isBoolean()
-    .withMessage('isActive must be a boolean')
+    .withMessage('isActive must be a boolean'),
+  body('isBold')
+    .optional()
+    .isBoolean()
+    .withMessage('isBold must be a boolean'),
+  body('isUnderlined')
+    .optional()
+    .isBoolean()
+    .withMessage('isUnderlined must be a boolean'),
+  body('isLowercase')
+    .optional()
+    .isBoolean()
+    .withMessage('isLowercase must be a boolean')
 ], async (req, res) => {
   try {
     // Check if user is admin
@@ -46,13 +58,16 @@ router.put('/', auth, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { text, color, hyperlink, isActive } = req.body;
+    const { text, color, hyperlink, isActive, isBold, isUnderlined, isLowercase } = req.body;
     const updateData = {};
 
     if (text !== undefined) updateData.text = text;
     if (color !== undefined) updateData.color = color;
     if (hyperlink !== undefined) updateData.hyperlink = hyperlink;
     if (isActive !== undefined) updateData.isActive = isActive;
+    if (isBold !== undefined) updateData.isBold = isBold;
+    if (isUnderlined !== undefined) updateData.isUnderlined = isUnderlined;
+    if (isLowercase !== undefined) updateData.isLowercase = isLowercase;
 
     let banner = await Banner.findOne();
     if (!banner) {
@@ -60,7 +75,10 @@ router.put('/', auth, [
         text: text || 'Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)',
         color: color || '#28b6ea',
         hyperlink: hyperlink || '',
-        isActive: isActive !== undefined ? isActive : true
+        isActive: isActive !== undefined ? isActive : true,
+        isBold: isBold !== undefined ? isBold : false,
+        isUnderlined: isUnderlined !== undefined ? isUnderlined : false,
+        isLowercase: isLowercase !== undefined ? isLowercase : false
       });
     } else {
       Object.assign(banner, updateData);

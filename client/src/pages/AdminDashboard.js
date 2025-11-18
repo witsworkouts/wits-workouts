@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaVideo, FaChartBar, FaCog, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import axiosInstance from '../config/axios';
+import { parseBannerText } from '../utils/bannerTextParser';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,7 +53,10 @@ const AdminDashboard = () => {
     text: 'Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)',
     color: '#28b6ea',
     hyperlink: '',
-    isActive: true
+    isActive: true,
+    isBold: false,
+    isUnderlined: false,
+    isLowercase: false
   });
   const [bannerLoading, setBannerLoading] = useState(false);
   
@@ -1407,6 +1411,11 @@ const AdminDashboard = () => {
                       placeholder="Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)"
                       required
                     />
+                    <small style={{ color: 'rgba(255, 255, 255, 0.7)', display: 'block', marginTop: '0.5rem' }}>
+                      Format individual words: <strong>**bold**</strong>, <em>*italic*</em>, <u>__underline__</u>
+                      <br />
+                      Example: Coach **Connect** 2025-2026, *Coach* Camps, __Coach Summit__ (Spring)
+                    </small>
                   </div>
 
                   <div style={{ marginBottom: '1.5rem' }}>
@@ -1481,6 +1490,18 @@ const AdminDashboard = () => {
                     </label>
                   </div>
 
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={bannerSettings.isLowercase}
+                        onChange={(e) => setBannerSettings({ ...bannerSettings, isLowercase: e.target.checked })}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                      />
+                      <span>Lowercase (applies to entire banner)</span>
+                    </label>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={bannerLoading}
@@ -1515,32 +1536,35 @@ const AdminDashboard = () => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {bannerSettings.hyperlink ? (
-                      <a
-                        href={bannerSettings.hyperlink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'inherit',
-                          textDecoration: 'none',
-                          fontWeight: '600',
-                          fontSize: '1rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '1px'
-                        }}
-                      >
-                        {bannerSettings.text}
-                      </a>
-                    ) : (
-                      <span style={{
+                    {(() => {
+                      const baseStyle = {
                         fontWeight: '600',
                         fontSize: '1rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
-                      }}>
-                        {bannerSettings.text}
-                      </span>
-                    )}
+                        textTransform: bannerSettings.isLowercase ? 'lowercase' : 'none',
+                        letterSpacing: '1px',
+                        color: 'inherit',
+                        fontFamily: "'Helvetica', 'Arial', sans-serif"
+                      };
+                      const parsedText = parseBannerText(bannerSettings.text, baseStyle);
+
+                      return bannerSettings.hyperlink ? (
+                        <a
+                          href={bannerSettings.hyperlink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'inherit',
+                            textDecoration: 'none'
+                          }}
+                        >
+                          {parsedText}
+                        </a>
+                      ) : (
+                        <span style={baseStyle}>
+                          {parsedText}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

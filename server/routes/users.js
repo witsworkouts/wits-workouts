@@ -24,9 +24,7 @@ router.put('/profile', auth, [
   body('username')
     .optional()
     .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
+    .withMessage('Username must be between 3 and 30 characters'),
   body('schoolName')
     .optional()
     .notEmpty()
@@ -37,12 +35,37 @@ router.put('/profile', auth, [
     .withMessage('Address cannot be empty')
 ], async (req, res) => {
   try {
+    // First, get the user to check if they're an admin
+    const currentUser = await User.findById(req.user.userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Apply different validation rules based on user role
+    const { username, schoolName, address } = req.body;
+    
+    // If username is being updated, validate it
+    if (username !== undefined) {
+      // For non-admin users, apply strict validation (letters, numbers, underscores only)
+      if (currentUser.role !== 'admin') {
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+          return res.status(400).json({ 
+            errors: [{ 
+              msg: 'Username can only contain letters, numbers, and underscores',
+              param: 'username'
+            }] 
+          });
+        }
+      }
+      // For admins, allow any characters (parentheses, spaces, etc.) as long as length is valid
+      // Length validation is already handled by express-validator above
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, schoolName, address } = req.body;
     const updateData = {};
 
     if (username) updateData.username = username;

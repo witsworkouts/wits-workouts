@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../config/axios';
+import { parseBannerText } from '../utils/bannerTextParser';
 
 const ScrollingBanner = () => {
   // Animation duration in seconds - lower value = faster scrolling, higher value = slower scrolling
@@ -9,7 +10,10 @@ const ScrollingBanner = () => {
     text: 'Coach Connect 2025-2026, Coach Camps, Coach Summit (Spring)',
     color: '#28b6ea',
     hyperlink: '',
-    isActive: true
+    isActive: true,
+    isBold: false,
+    isUnderlined: false,
+    isLowercase: false
   });
   const [loading, setLoading] = useState(true);
 
@@ -59,36 +63,50 @@ const ScrollingBanner = () => {
           width: 'fit-content'
         }}
       >
-        {[...Array(6)].map((_, index) => (
-          <span 
-            key={index}
-            style={{
-              fontSize: '1rem',
-              fontWeight: '600',
-              textTransform: 'none',
-              letterSpacing: '1px',
-              padding: '0 50px',
-              display: 'inline-block',
-              flexShrink: 0
-            }}
-          >
-            {banner.hyperlink ? (
-              <a
-                href={banner.hyperlink}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'none'
-                }}
-              >
-                {banner.text}
-              </a>
-            ) : (
-              banner.text
-            )}
-          </span>
-        ))}
+        {[...Array(6)].map((_, index) => {
+          const baseStyle = {
+            fontSize: '1rem',
+            fontWeight: '600',
+            textTransform: banner.isLowercase ? 'lowercase' : 'none',
+            letterSpacing: '1px',
+            color: 'inherit',
+            fontFamily: "'Helvetica', 'Arial', sans-serif"
+          };
+
+          const parsedText = parseBannerText(banner.text, baseStyle);
+
+          return (
+            <span 
+              key={index}
+              style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                textTransform: banner.isLowercase ? 'lowercase' : 'none',
+                letterSpacing: '1px',
+                padding: '0 50px',
+                display: 'inline-block',
+                flexShrink: 0,
+                fontFamily: "'Helvetica', 'Arial', sans-serif"
+              }}
+            >
+              {banner.hyperlink ? (
+                <a
+                  href={banner.hyperlink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'inherit',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {parsedText}
+                </a>
+              ) : (
+                parsedText
+              )}
+            </span>
+          );
+        })}
       </div>
       <style>
         {`
