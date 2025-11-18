@@ -153,7 +153,6 @@ const CategoryTabs = ({ categories, currentCategory, onCategoryChange, activeSub
                 ? `linear-gradient(45deg, ${category.color}, ${category.color})` 
                 : `linear-gradient(45deg, ${category.color}, ${category.color})`,
               border: currentCategory === category.id ? 'none' : `1px solid ${category.color}`,
-              position: 'relative',
               color: currentCategory === category.id ? 'white' : 'white',
               transition: 'all 0.3s ease'
             }}

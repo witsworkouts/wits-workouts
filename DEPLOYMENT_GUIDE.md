@@ -258,10 +258,10 @@ If you want to serve frontend from backend (already configured in `server/index.
    - **IMPORTANT**: In GoDaddy, you need to:
      1. **Remove any existing A records** for `@` that point to GoDaddy's parking page
      2. **Add new A records** for each IP address Render provides:
-        - **Type**: A
+     - **Type**: A
         - **Name**: `@` (or leave blank - this is the root domain)
         - **Value**: Each IP address from Render (add one record per IP)
-        - **TTL**: 600
+     - **TTL**: 600
      3. **Make sure you're NOT using GoDaddy's "Parked Domain" or "Coming Soon" page**
    
    - For `www`:
@@ -279,9 +279,9 @@ If you want to serve frontend from backend (already configured in `server/index.
    - Render will provide the exact DNS record to use (usually a CNAME)
    - In GoDaddy, add the record:
      - **Type**: CNAME (or A record if Render specifies)
-     - **Name**: `api` (or `backend`)
+   - **Name**: `api` (or `backend`)
      - **Value**: Use the exact value Render provides (e.g., `wits-workouts-api.onrender.com` or an IP address)
-     - **TTL**: 3600
+   - **TTL**: 3600
 
 3. **Wait for DNS Propagation**
    - DNS changes can take 24-48 hours, but usually happen within 1-2 hours
@@ -419,7 +419,7 @@ You need at least one admin account to manage the site. Here are three ways to c
    node scripts/createProductionAdmin.js
    ```
 3. **Or with custom credentials**:
-   ```bash
+```bash
    MONGODB_URI="your-connection-string" EMAIL=your-email@example.com PASSWORD=YourPassword node scripts/createProductionAdmin.js
    ```
 
