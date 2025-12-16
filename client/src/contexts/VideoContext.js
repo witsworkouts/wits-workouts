@@ -270,6 +270,12 @@ export const VideoProvider = ({ children }) => {
       // Reload leaderboard after view
       await loadLeaderboard();
     } catch (error) {
+      // Silently handle 429 errors (rate limiting) - these are expected
+      // and don't need to be logged as errors
+      if (error.response?.status === 429) {
+        // Rate limited - view will be tracked on next attempt
+        return;
+      }
       console.error('Error tracking video view:', error);
     }
   };

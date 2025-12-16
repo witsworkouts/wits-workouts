@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useVideo } from '../contexts/VideoContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,22 +7,91 @@ import { FaArrowLeft } from 'react-icons/fa';
 const VideoPlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentVideo, getVideo, trackVideoView, videos, restorePreviousState } = useVideo();
+  const { currentVideo, getVideo, trackVideoView, restorePreviousState } = useVideo();
   const { isAuthenticated, user } = useAuth();
+  const viewTrackedRef = useRef(false);
+  const startTimeRef = useRef(null);
+  const timerRef = useRef(null);
+  const currentVideoIdRef = useRef(null);
+  const isTrackingRef = useRef(false);
 
   useEffect(() => {
+    // Only reset if video ID actually changed
+    if (currentVideoIdRef.current !== id) {
+      // Clean up previous video's timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      // Reset tracking state for new video
+      viewTrackedRef.current = false;
+      startTimeRef.current = null;
+      isTrackingRef.current = false;
+      currentVideoIdRef.current = id;
+    }
+
     const loadVideo = async () => {
-      const video = await getVideo(id);
-      if (video && isAuthenticated) {
-        try {
-          await trackVideoView(id);
-        } catch (error) {
-          console.error('Error tracking video view:', error);
+      try {
+        const video = await getVideo(id);
+        if (video && isAuthenticated && !isTrackingRef.current) {
+          // Start tracking time when video loads
+          startTimeRef.current = Date.now();
+          viewTrackedRef.current = false;
+          isTrackingRef.current = true;
+
+          // Set up timer to track view after 1 minute (60 seconds)
+          timerRef.current = setTimeout(async () => {
+            // Double-check we're still on the same video and haven't tracked yet
+            if (currentVideoIdRef.current === id && !viewTrackedRef.current && isAuthenticated) {
+              try {
+                await trackVideoView(id);
+                viewTrackedRef.current = true;
+              } catch (error) {
+                // Silently handle 429 errors (rate limiting) - don't spam console
+                if (error.response?.status !== 429) {
+                  console.error('Error tracking video view:', error);
+                }
+              }
+            }
+          }, 60000); // 60 seconds = 1 minute
         }
+      } catch (error) {
+        console.error('Error loading video:', error);
       }
     };
+    
     loadVideo();
-  }, [id, isAuthenticated]);
+
+    // Cleanup: track view if user leaves after watching for at least 1 minute
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      // If user has been on page for at least 1 minute and view hasn't been tracked yet
+      if (currentVideoIdRef.current === id && 
+          startTimeRef.current && 
+          !viewTrackedRef.current && 
+          isAuthenticated &&
+          isTrackingRef.current) {
+        const timeSpent = Date.now() - startTimeRef.current;
+        if (timeSpent >= 60000) { // 60 seconds
+          trackVideoView(id).catch(error => {
+            // Silently handle 429 errors
+            if (error.response?.status !== 429) {
+              console.error('Error tracking video view on unmount:', error);
+            }
+          });
+        }
+      }
+      
+      // Reset tracking flag when component unmounts
+      isTrackingRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isAuthenticated]); // Intentionally excluding getVideo and trackVideoView to prevent unnecessary re-runs
 
   const handleClose = async () => {
     // Restore previous state before navigating back

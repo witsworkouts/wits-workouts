@@ -108,6 +108,20 @@ router.post('/:id/view', auth, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check if user has already viewed this video in the last 2 minutes
+    // This prevents duplicate view tracking from rapid requests
+    const existingView = user.videosViewed.find(view => 
+      view.videoId.toString() === id.toString()
+    );
+    
+    const now = Date.now();
+    const twoMinutesAgo = now - (2 * 60 * 1000); // 2 minutes in milliseconds
+    
+    if (existingView && existingView.viewedAt && new Date(existingView.viewedAt).getTime() > twoMinutesAgo) {
+      // User already viewed this video recently, don't count again
+      return res.json({ message: 'View already tracked recently' });
+    }
+
     // Increment video view count
     await video.incrementViewCount();
     
