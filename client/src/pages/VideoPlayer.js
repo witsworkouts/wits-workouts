@@ -100,12 +100,46 @@ const VideoPlayer = () => {
     navigate('/', { state: { restoring: true } });
   };
 
-  const getEmbedUrl = (driveUrl) => {
-    const fileId = driveUrl.match(/\/d\/(.+?)(\/|$)/)?.[1];
+  const extractYouTubeId = (url) => {
+    if (!url) return '';
+
+    // Bare ID
+    const bareIdMatch = url.match(/^[a-zA-Z0-9_-]{8,}$/);
+    if (bareIdMatch) {
+      return bareIdMatch[0];
+    }
+
+    const patterns = [
+      /[?&]v=([^&#]+)/,
+      /youtu\.be\/([^&#?/]+)/,
+      /youtube\.com\/embed\/([^&#?/]+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return '';
+  };
+
+  const getEmbedUrl = (url) => {
+    if (!url) return '';
+
+    // Prefer YouTube if possible
+    const youtubeId = extractYouTubeId(url);
+    if (youtubeId) {
+      return `https://www.youtube.com/embed/${youtubeId}?rel=0`;
+    }
+
+    // Backwards compatibility: Google Drive preview
+    const fileId = url.match(/\/d\/(.+?)(\/|$)/)?.[1];
     if (fileId) {
       return `https://drive.google.com/file/d/${fileId}/preview`;
     }
-    return driveUrl;
+
+    return url;
   };
 
   if (!currentVideo) {

@@ -68,6 +68,7 @@ const AdminDashboard = () => {
     isActive: true
   });
   const [sitePasswordLoading, setSitePasswordLoading] = useState(false);
+  const [clearLeaderboardLoading, setClearLeaderboardLoading] = useState(false);
 
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({
@@ -219,6 +220,31 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleClearLeaderboard = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to clear the leaderboard? This will reset all users\' view counts to 0 and clear their video viewing history. This action cannot be undone.'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+
+    setClearLeaderboardLoading(true);
+    try {
+      const response = await axiosInstance.post('/api/admin/leaderboard/clear');
+      alert(`Leaderboard cleared successfully! ${response.data.usersUpdated} users updated.`);
+      // Reload analytics to reflect the changes
+      if (activeTab === 'overview') {
+        loadAnalytics();
+      }
+    } catch (error) {
+      console.error('Error clearing leaderboard:', error);
+      alert(error.response?.data?.message || 'Failed to clear leaderboard');
+    } finally {
+      setClearLeaderboardLoading(false);
+    }
+  };
+
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
     
@@ -349,17 +375,17 @@ const AdminDashboard = () => {
       }
       
       if (!newVideo.googleDriveUrl.trim()) {
-        alert('Please enter a Google Drive URL');
+        alert('Please enter a YouTube URL');
         setLoading(false);
         return;
       }
+
+      // Extract YouTube video ID from URL
+      const youtubeId = extractYouTubeId(newVideo.googleDriveUrl);
+      console.log('Extracted YouTube ID:', youtubeId);
       
-      // Extract Google Drive ID from URL
-      const driveId = extractDriveId(newVideo.googleDriveUrl);
-      console.log('Extracted Drive ID:', driveId);
-      
-      if (!driveId) {
-        alert('Could not extract Google Drive ID from the provided URL. Please check the URL format.');
+      if (!youtubeId) {
+        alert('Could not extract YouTube video ID from the provided URL. Please check the URL format.');
         setLoading(false);
         return;
       }
@@ -383,7 +409,9 @@ const AdminDashboard = () => {
       
       const videoData = {
         ...newVideo,
-        googleDriveId: driveId,
+        // We continue using googleDriveId/googleDriveUrl field names in the backend,
+        // but they now store the YouTube video ID and URL.
+        googleDriveId: youtubeId,
         tags: newVideo.tags ? newVideo.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
         // For Mindfulness, don't set duration; for others, use the selected duration
         duration: newVideo.category === 'mindfulness' ? undefined : (parseInt(newVideo.duration) || 300),
@@ -420,26 +448,30 @@ const AdminDashboard = () => {
     }
   };
 
-  const extractDriveId = (url) => {
+  const extractYouTubeId = (url) => {
     if (!url) return '';
-    
-    // Handle different Google Drive URL formats
+
+    // If it's already a bare ID
+    const bareIdMatch = url.match(/^[a-zA-Z0-9_-]{8,}$/);
+    if (bareIdMatch) {
+      return bareIdMatch[0];
+    }
+
     const patterns = [
-      /\/d\/([a-zA-Z0-9-_]+)/,  // Standard format: /d/ID
-      /id=([a-zA-Z0-9-_]+)/,    // Alternative format: ?id=ID
-      /file\/d\/([a-zA-Z0-9-_]+)/  // Another format: /file/d/ID
+      /[?&]v=([^&#]+)/,                 // watch?v=VIDEO_ID
+      /youtu\.be\/([^&#?/]+)/,          // youtu.be/VIDEO_ID
+      /youtube\.com\/embed\/([^&#?/]+)/ // youtube.com/embed/VIDEO_ID
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match) {
+      if (match && match[1]) {
         return match[1];
       }
     }
-    
-    // If no pattern matches, return the original URL
-    console.warn('Could not extract Google Drive ID from URL:', url);
-    return url;
+
+    console.warn('Could not extract YouTube ID from URL:', url);
+    return '';
   };
 
   const deleteVideo = async (id) => {
@@ -544,18 +576,18 @@ const AdminDashboard = () => {
 
   const startEditVideo = (video) => {
     setEditingVideo(video);
-    setEditVideo({
-      title: video.title,
-      description: video.description || '',
-      category: video.category,
-      subcategory: Array.isArray(video.subcategory) ? video.subcategory : [video.subcategory || 'pre-k-2'],
-      googleDriveUrl: video.googleDriveUrl,
-      instructor: video.instructor || '',
-      duration: video.duration || 300,
-      tags: video.tags ? video.tags.join(', ') : '',
-      featured: video.featured || false,
-      thumbnailUrl: video.thumbnailUrl || ''
-    });
+      setEditVideo({
+        title: video.title,
+        description: video.description || '',
+        category: video.category,
+        subcategory: Array.isArray(video.subcategory) ? video.subcategory : [video.subcategory || 'pre-k-2'],
+        googleDriveUrl: video.googleDriveUrl,
+        instructor: video.instructor || '',
+        duration: video.duration || 300,
+        tags: video.tags ? video.tags.join(', ') : '',
+        featured: video.featured || false,
+        thumbnailUrl: video.thumbnailUrl || ''
+      });
     // Set preview if thumbnail exists
     if (video.thumbnailUrl) {
       // If it's already a full URL, use it; otherwise use relative path
@@ -1097,13 +1129,13 @@ const AdminDashboard = () => {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Google Drive URL</label>
+                        <label className="form-label">YouTube URL</label>
                         <input
                           type="url"
                           value={newVideo.googleDriveUrl}
                           onChange={(e) => setNewVideo({...newVideo, googleDriveUrl: e.target.value})}
                           className="form-input"
-                          placeholder="https://drive.google.com/file/d/..."
+                          placeholder="https://www.youtube.com/watch?v=..."
                           required
                         />
                       </div>
@@ -1303,13 +1335,13 @@ const AdminDashboard = () => {
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Google Drive URL</label>
+                        <label className="form-label">YouTube URL</label>
                         <input
                           type="url"
                           value={editVideo.googleDriveUrl}
                           onChange={(e) => setEditVideo({...editVideo, googleDriveUrl: e.target.value})}
                           className="form-input"
-                          placeholder="https://drive.google.com/file/d/..."
+                          placeholder="https://www.youtube.com/watch?v=..."
                           required
                         />
                       </div>
@@ -1810,6 +1842,39 @@ const AdminDashboard = () => {
                     {sitePasswordLoading ? 'Updating...' : 'Update Site Password'}
                   </button>
                 </form>
+              </div>
+
+              {/* Leaderboard Management */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '10px',
+                padding: '2rem',
+                marginTop: '2rem'
+              }}>
+                <h4 style={{ marginBottom: '1rem', color: '#fff' }}>Leaderboard Management</h4>
+                <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                  Clear the leaderboard to reset all users' view counts to zero and remove their video viewing history. This action cannot be undone.
+                </p>
+                
+                <button
+                  onClick={handleClearLeaderboard}
+                  disabled={clearLeaderboardLoading}
+                  style={{
+                    padding: '12px 24px',
+                    background: clearLeaderboardLoading 
+                      ? '#666' 
+                      : 'linear-gradient(45deg, #ff4757, #ff4757dd)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: clearLeaderboardLoading ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {clearLeaderboardLoading ? 'Clearing...' : 'Clear Leaderboard'}
+                </button>
               </div>
             </div>
           )}

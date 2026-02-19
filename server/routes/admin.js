@@ -506,4 +506,27 @@ router.get('/stats/user-activity', async (req, res) => {
   }
 });
 
+// Clear leaderboard (reset all users' totalViews to 0 and clear video history)
+router.post('/leaderboard/clear', async (req, res) => {
+  try {
+    const result = await User.updateMany(
+      { isActive: true },
+      { 
+        $set: { 
+          totalViews: 0,
+          videosViewed: []
+        }
+      }
+    );
+    
+    res.json({ 
+      message: 'Leaderboard cleared successfully',
+      usersUpdated: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Clear leaderboard error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router; 

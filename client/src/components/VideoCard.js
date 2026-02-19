@@ -65,17 +65,48 @@ const VideoCard = ({ video, onClick }) => {
     }
   };
 
-  // Generate thumbnail from Google Drive URL
+  const extractYouTubeId = (url) => {
+    if (!url) return '';
+
+    const bareIdMatch = url.match(/^[a-zA-Z0-9_-]{8,}$/);
+    if (bareIdMatch) {
+      return bareIdMatch[0];
+    }
+
+    const patterns = [
+      /[?&]v=([^&#]+)/,
+      /youtu\.be\/([^&#?/]+)/,
+      /youtube\.com\/embed\/([^&#?/]+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return '';
+  };
+
+  // Generate thumbnail from video URL (now YouTube-first, with Drive fallback)
   const getThumbnailUrl = () => {
     // If we have a custom thumbnail URL, use it
     if (video.thumbnailUrl) {
       return video.thumbnailUrl;
     }
-    
-    // Try to generate thumbnail from Google Drive URL
-    const fileId = video.googleDriveUrl?.match(/\/d\/(.+?)(\/|$)/)?.[1];
+
+    const url = video.googleDriveUrl;
+
+    // Prefer YouTube thumbnail if we can extract an ID
+    const youtubeId = extractYouTubeId(url);
+    if (youtubeId) {
+      return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+    }
+
+    // Backwards compatibility: Google Drive thumbnail
+    const fileId = url?.match(/\/d\/(.+?)(\/|$)/)?.[1];
     if (fileId) {
-      // Use Google Drive's thumbnail service
       return `https://drive.google.com/thumbnail?id=${fileId}&sz=w300-h200`;
     }
     
